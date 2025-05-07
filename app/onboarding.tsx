@@ -1,7 +1,7 @@
 import { images } from "@/constants/images";
+import { router } from "expo-router";
 import { Image, Pressable, Text, View } from "react-native";
 import AppIntroSlider from "react-native-app-intro-slider";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const slides = [
   {
@@ -30,7 +30,7 @@ const slides = [
   },
 ];
 
-export default function Onboarding({ onFinish }: { onFinish: () => void }) {
+export default function Onboarding() {
   const renderItem = ({ item }: { item: typeof slides[number] }) => (
     <View className="flex-1 items-center justify-center px-6">
       <Text className="text-4xl font-bold text-center text-white pb-10">
@@ -49,20 +49,20 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-primary-200">
+    <View className="h-full  bg-primary-200 ">
       <AppIntroSlider
         data={slides}
         renderItem={renderItem}
-        onDone={onFinish}
-        onSkip={onFinish}
+        onDone={onDone}
+        onSkip={onDone}
         showNextButton={false}
         showDoneButton={false}
         bottomButton={false}
       />
 
-      <View className="px-6 mb-10">
+      <View className="px-6 mb-5">
         <Pressable 
-          onPress={() => console.log("Get Started")} 
+          onPress={() => router.push('/(auth)/sign-up')} 
           className="bg-primary-300 rounded-full py-3 mb-4">
           <Text className="text-white text-center text-lg font-semibold">
             Get Started
@@ -70,7 +70,7 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
         </Pressable>
 
         <Pressable 
-          onPress={() => console.log("Log In")} 
+          onPress={() =>  router.push('/(auth)/sign-in')} 
           className="bg-transparent border-2 border-white rounded-full py-3">
           <Text className="text-white text-center text-lg font-semibold">
             Log In
@@ -78,6 +78,6 @@ export default function Onboarding({ onFinish }: { onFinish: () => void }) {
         </Pressable>
       </View>
 
-    </SafeAreaView>
+    </View>
   )
 }

@@ -1,12 +1,13 @@
+import { Slot } from 'expo-router';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 const AuthLayout = () => {
   return (
-    <View>
-      <Text>AuthLayout</Text>
+    <View className='flex-1'>
+       <Slot />
     </View>
-  )
-}
+  );
+};
 
-export default AuthLayout
+export default AuthLayout;
