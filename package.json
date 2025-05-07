@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+    "@google-cloud/vision": "^5.1.0",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
@@ -20,7 +21,7 @@
     "expo": "~53.0.7",
     "expo-blur": "~14.1.4",
     "expo-camera": "~16.1.6",
-    "expo-constants": "~17.1.5",
+    "expo-constants": "~17.1.6",
     "expo-font": "~13.3.1",
     "expo-haptics": "~14.1.4",
     "expo-image": "~2.1.6",
