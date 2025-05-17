@@ -73,13 +73,16 @@ const Home = () => {
                 </Text>
               </Pressable>
             </View>
-            <View className="flex-row flex-wrap gap-2 justify-evenly">
-              <View className="h-28 w-28 rounded-2xl bg-primary-100"></View>
-              <View className="h-28 w-28 rounded-2xl bg-primary-100"></View>
-              <View className="h-28 w-28 rounded-2xl bg-primary-100"></View>
-              <View className="h-28 w-28 rounded-2xl bg-primary-100"></View>
-              <View className="h-28 w-28 rounded-2xl bg-primary-100"></View>
-              <View className="h-28 w-28 rounded-2xl bg-primary-100"></View>
+            <View className="flex-row flex-wrap gap-3 justify-evenly">
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
+              <View className="h-10 w-28 rounded-2xl bg-primary-100"></View>
             </View>
             <View className="flex-row justify-center">
               <Pressable onPress={() => router.push('/')} className="px-5 py-1  rounded-2xl bg-primary-50 ">
