@@ -85,6 +85,7 @@ const Profile = () => {
                   month: "short",
                   day: "numeric",
                 })}
+                
               </Text>
             </View>
           </View>
