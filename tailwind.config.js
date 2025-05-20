@@ -37,7 +37,7 @@ module.exports = {
           inverse: "#FFFFFF",
         },
         background: {
-          light: "#F8FAFC",   // slate-50
+          light: "#FFFFFF",   // slate-50 F8FAFC
           dark: "#0F172A",    // slate-900
         },
       },

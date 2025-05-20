@@ -48,6 +48,8 @@ export const getMyProfile = async (token: string) => {
             },
         });
 
+        console.log(response.data);
+
         return response.data
     } catch (error) {
         throw new Error("Error loading user profile.");

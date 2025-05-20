@@ -19,7 +19,6 @@ const History = () => {
                 } else {
                     const data = await getMyReceipts(token);
                     setReceipts(data);
-                    console.log(data);
                 }
             } catch (error) {
                 Alert.alert("Error", "Failed to load receipts data.");
