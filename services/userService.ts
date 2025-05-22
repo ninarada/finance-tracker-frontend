@@ -1,18 +1,5 @@
+import { UpdatedProfileData, User } from "../types/user";
 import apiClient from "./apiClient";
-
-interface User {
-  _id: string;
-  username: string;
-  email: string;
-  token: string;
-}
-
-interface UpdatedProfileData {
-  name?: string;
-  surname?: string;
-  location?: string;
-  bio?: string;
-}
 
 export const registerUser = async (username: string, email: string, password: string): Promise<User> => {
   try {

@@ -1,4 +1,5 @@
 import { getMyReceipts } from "@/services/receiptsService";
+import { Receipt } from "@/types/receipt";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -6,8 +7,8 @@ import { Alert, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } fro
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const History = () => {
-    const [receipts, setReceipts] = useState([]);
-    const [selectedReceipt, setSelectedReceipt] = useState(null);
+    const [receipts, setReceipts] = useState<Receipt[]>([]);
+    const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -67,7 +68,7 @@ const History = () => {
                                 ))}
                             
                                 {receipt.items.length > 2 && (
-                                    <Text className="text-xs text-blue-400 mt-1">
+                                    <Text className="text-xs text-primary-250 mt-1">
                                     + {receipt.items.length - 2} more
                                     </Text>
                                 )}
@@ -114,17 +115,17 @@ const History = () => {
                                 <Text className="text-xs text-gray-400 italic mb-2">Note: {selectedReceipt.note}</Text>
                             )}
 
-                            {selectedReceipt?.tags?.length > 0 && (
+                            {selectedReceipt?.tags && selectedReceipt.tags.length > 0 && (
                                 <Text className="text-xs text-gray-500 mb-2">
                                     Tags: {selectedReceipt.tags.join(", ")}
                                 </Text>
                             )}
 
                             <Pressable
-                                className="mt-3 bg-blue-500 px-4 py-2 rounded-xl"
+                                className="mt-3 bg-primary-250 px-4 py-2 rounded-xl"
                                 onPress={() => setSelectedReceipt(null)}
                             >
-                                <Text className="text-white text-center">Close</Text>
+                                <Text className="text-white text-center font-semibold">Close</Text>
                             </Pressable>
                         </View>
                     </View>

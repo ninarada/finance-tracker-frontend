@@ -1,5 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
@@ -46,6 +47,19 @@ const Profile = () => {
     }
   };
 
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      base64: true,
+    });
+  
+    if (!result.canceled && result.assets.length > 0) {
+      const selectedImage = result.assets[0];
+      setEditUser({ ...editUser, photo: selectedImage.uri });
+    }
+  };  
+
   const handleCancelEdit = async () => {
     setEditUser(user);
     setEditingMode(false);
@@ -60,6 +74,7 @@ const Profile = () => {
           surname: editUser.surname,
           location: editUser.location,
           bio: editUser.bio,
+          photo: editUser.photo,
         });
         setEditingMode(false);
         setUser(editUser)
@@ -79,7 +94,7 @@ const Profile = () => {
               <View className="flex-1 bg-background-light rounded-xl" />
             </View>
             <Pressable
-              onPress={handleLogout}
+              onPress={() => router.push("/settings")}
               className="absolute top-4 right-4 z-10"
             >
               <FontAwesome size={32} name="gear" color="#64748B"/>
@@ -145,7 +160,7 @@ const Profile = () => {
           <View className='bg-background-light rounded-xl m-2 py-5 px-4 flex-col gap-2'>
             <Text className="text-text text-lg font-medium mb-2">Top Categories:</Text>
             <View className='flex-row gap-3 flex-wrap justify-center'>
-            {stats?.topCategories.length > 0 ? stats?.topCategories.map((item, index) => {
+            {stats?.topCategories.length > 0 ? stats?.topCategories.map((item: { category: string }, index: React.Key ) => {
                 return (
                   <Pressable key={index} className="justify-center items-center bg-primary-50 rounded-3xl px-6 py-1">
                     <Text className="text-primary-250 text-center text-xl font-semibold">
@@ -159,13 +174,15 @@ const Profile = () => {
             </View>
           </View>
 
-          <View className="flex-row mt-4 h-20 gap-2 mb-5">
-            <Pressable onPress={() => setEditingMode(true)} className="flex-1 justify-center items-center bg-primary-250 rounded-xl">
+          <View className="flex-row mt-4 mb-5">
+            <View className='w-1/2'>
+            <Pressable onPress={() => setEditingMode(true)} className="mr-1 h-20 justify-center items-center bg-primary-250 rounded-xl">
               <Text className="text-white text-center text-xl font-semibold uppercase">Edit</Text>
-            </Pressable>
-            <Pressable onPress={handleLogout} className="w-1/2 justify-center items-center bg-primary-200 rounded-xl">
+            </Pressable></View>
+            <View className='w-1/2'>
+            <Pressable onPress={handleLogout} className="ml-1 h-20 justify-center items-center bg-primary-200 rounded-xl">
               <Text className="text-white text-center text-xl font-semibold uppercase">Log Out</Text>
-            </Pressable>
+            </Pressable></View>
           </View>
 
           <Modal
@@ -176,6 +193,13 @@ const Profile = () => {
           >
             <View className="flex-1 justify-center items-center bg-black/70 px-5">
               <View className="bg-white w-full rounded-2xl p-5 gap-1">
+              <Pressable onPress={pickImage} className="items-center mb-3">
+                <Image
+                  source={{ uri: editUser?.photo || user?.photo }}
+                  className="w-24 h-24 rounded-full border-2 border-gray-300"
+                />
+                <Text className="text-primary-250 mt-1">Change Photo</Text>
+              </Pressable>
                 <Text className="text-text-light text-md">Name</Text>
                 <TextInput 
                   className="border border-gray-300 rounded-xl px-4 py-2 mb-3"
