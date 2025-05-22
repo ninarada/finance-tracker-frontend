@@ -43,7 +43,7 @@ const Home = () => {
               <Image source={userPhoto} className="w-14 h-14 rounded-full" resizeMode="contain"/>
               <View>
                 <Text className="text-xl font-bold text-text">Hello, </Text>
-                <Text className="text-xl font-bold text-text">{user?.username ? `${user.username}` : ""}!</Text>
+                <Text className="text-xl font-bold text-text">{user?.name ? `${user.name}` : ""}!</Text>
               </View>
             </View>
             <FontAwesome size={32} name="bell-o" color="#64748B"/>

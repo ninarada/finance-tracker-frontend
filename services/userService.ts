@@ -7,6 +7,13 @@ interface User {
   token: string;
 }
 
+interface UpdatedProfileData {
+  name?: string;
+  surname?: string;
+  location?: string;
+  bio?: string;
+}
+
 export const registerUser = async (username: string, email: string, password: string): Promise<User> => {
   try {
     const response = await apiClient.post('/api/users/register', {
@@ -54,4 +61,31 @@ export const getMyProfile = async (token: string) => {
     } catch (error) {
         throw new Error("Error loading user profile.");
     }
+}
+
+export const getUserStats = async (token: string) => {
+  try {
+    const response = await apiClient.get('/api/users/stats', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error){
+    throw new Error('Error loading user stats.');
+  }
+}
+
+export const updateProfile = async (token: string, updatedData: UpdatedProfileData) => {
+  try {
+    const response = await apiClient.put('/api/users/updateProfile', updatedData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error updating profile.');
+  }
 }
