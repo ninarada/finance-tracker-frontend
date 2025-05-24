@@ -99,11 +99,16 @@ const History = () => {
 
                                 {/* Item Rows */}
                                 {selectedReceipt?.items.map((item, i) => (
-                                    <View key={i} className="flex-row py-1">
-                                        <Text className="w-1/3 text-gray-700">{item.name}</Text>
-                                        <Text className="w-1/6 text-right text-gray-700">€{item.unitPrice?.toFixed(2)}</Text>
-                                        <Text className="w-1/6 text-right text-gray-700">{item.quantity}</Text>
-                                        <Text className="w-1/3 text-right text-gray-700">€{item.totalPrice?.toFixed(2)}</Text>
+                                    <View key={i} className="py-1">
+                                        <View  className="flex-row">
+                                            <Text className="w-1/3 text-gray-700">{item.name}</Text>
+                                            <Text className="w-1/6 text-right text-gray-700">€{item.unitPrice?.toFixed(2)}</Text>
+                                            <Text className="w-1/6 text-right text-gray-700">{item.quantity}</Text>
+                                            <Text className="w-1/3 text-right text-gray-700">€{item.totalPrice?.toFixed(2)}</Text>
+                                        </View>
+                                        {item.categories && item.categories.length > 0 && (
+                                            <Text className="text-xs text-gray-500 pl-1 my-1">Categories: {item.categories.join(", ")}</Text>
+                                        )}
                                     </View>
                                 ))}
                             </View>

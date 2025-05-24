@@ -3,6 +3,7 @@ export interface ReceiptItem {
     unitPrice: number;
     quantity: number;
     totalPrice: number;
+    categories?: string[];
 }
   
 export interface Receipt {
@@ -15,3 +16,12 @@ export interface Receipt {
     note?: string;
     tags?: string[];
 }
+
+export interface CreateReceipt{
+    items: ReceiptItem[];
+    note?: string;
+    paymentMethod?: "Cash" | "Card" | "Mobile" | "Other";
+    tags?: string[];
+    store?: string;
+    date?: string | Date;
+  }

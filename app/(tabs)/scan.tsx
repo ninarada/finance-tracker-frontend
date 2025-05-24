@@ -1,48 +1,47 @@
-import { detectText } from "@/services/googleCloudVisionAPI";
-import { extractItemsFromText, ReceiptItem } from '@/utils/parseReceipt';
-import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from "react";
-import { Button, Image, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { CreateReceipt } from "@/types/receipt";
+import { useRouter } from "expo-router";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const ScanReceipt = () => {
-  const [image, setImage] = useState<string | null>(null);
-  const [extractedText, setExtractedText] = useState<string>('');
-
-  const handleExtract = (ocrText: string) => {
-    const items: ReceiptItem[] = extractItemsFromText(ocrText);
-    console.log(items);
-  };
-
-  const pickImageAndDetectText = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-    });
-
-    if (!result.canceled && result.assets && result.assets[0].base64) {
-      const base64Image = result.assets[0].base64;
-      setImage(result.assets[0].uri);
-
-      try {
-        const text = await detectText(base64Image);
-        setExtractedText(text);
-        console.log(text);
-        console.log("------------------------");
-        handleExtract(text);
-      } catch (error) {
-        setExtractedText('Failed to extract text.');
-      }
-    }
-  };
+  const router = useRouter();
+  
+  const receiptInitial: CreateReceipt  = {
+    items: [],
+    note: "",
+    paymentMethod: undefined,
+    tags: [],
+    store: "",
+    date: "",
+  }
 
   return (
-    <SafeAreaView className="h-full">
-      <Button title="Pick Image and Scan Text" onPress={pickImageAndDetectText} />
-      {image && <Image source={{ uri: image }} style={{ width: 200, height: 200, marginVertical: 20 }} />}
-      <Text>Extracted Text:</Text>
-      <Text>{extractedText}</Text>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView className="h-full pb-7 items-center justify-center">
+          <View className="items-center">
+            <Text className="text-2xl font-bold my-5 text-slate-700 ita">Scan Receipts</Text>
+          </View>
+
+          <View className="gap-2 ">
+            <Pressable onPress={() => {router.push("/scanReceipt")}} className="bg-primary-300 py-2 rounded-3xl  my-2">
+              <Text className="text-white font-bold text-lg text-center">Take a Photo</Text>
+            </Pressable>
+
+            <Pressable onPress={() => {router.push("/addNewReceipt")}} className="bg-primary-200 px-10 py-2 rounded-3xl my-2">
+              <Text className="text-white font-bold text-lg text-center">Add New Manually</Text>
+            </Pressable>
+          </View>
+          
+          {/* <ScanNewReceipt /> */}
+
+          {/* <Pressable onPress={()=>setNewReceiptVisible(true)} className="bg-primary-200 px-4 py-2 rounded-3xl self-center my-2">
+            <Text className="text-white font-bold text-lg text-center">Add New Receipt Manually</Text>
+          </Pressable>
+          {newReceiptVisible && <AddNewReceipt visible={true} onClose={() => setNewReceiptVisible(false)} receipt={receiptInitial}/>}   */}
+          
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 

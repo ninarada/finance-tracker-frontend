@@ -1,3 +1,4 @@
+import { CreateReceipt } from "@/types/receipt";
 import apiClient from "./apiClient";
 
 export const getMyReceipts = async (token: string) => {
@@ -28,5 +29,24 @@ export const getCategoryItems= async (token: string, category: string) => {
         return response.data
     } catch (error) {
         throw new Error("Error loading receipts.");
+    }
+}
+
+export const createReceipt = async (token: string, data: CreateReceipt) => {
+    try {
+        const response = await apiClient.post('/api/receipts/new', 
+            {
+                ...data,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        throw new Error("Error creating receipt.");
     }
 }
