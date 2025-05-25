@@ -8,36 +8,6 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-const demo = {
-    "date": "31.12.2007",
-    "items": [
-      {
-        "itemName": "Apple",
-        "itemQuantity": "1x",
-        "itemTotalPrice": "0,70",
-        "itemUnitPrice": "0,70"
-      },
-      {
-        "itemName": "SUNKA",
-        "itemQuantity": "1x",
-        "itemTotalPrice": "1,00",
-        "itemUnitPrice": "1,00"
-      },
-      {
-        "itemName": "JAJCE",
-        "itemQuantity": "3x",
-        "itemTotalPrice": "1,20",
-        "itemUnitPrice": "0,40"
-      },
-    ],
-    "location": "Sp.trg 4, 4220 Škofja Loka",
-    "paymentMethod": "GOTOVINA",
-    "storeName": "Gostilna PRAJERCA",
-    "totalAmount": "2,90",
-    "note": "",
-    "tags": []
-}
-
 const ScanNewReceipt = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -75,33 +45,25 @@ const ScanNewReceipt = () => {
 
         fetchUserProfile();
 
-        const openCamera = async () => {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-                alert('Camera permission is required');
-                return;
-            }
-
-            const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                quality: 1,
-                base64: true,
+        const pickImage = async () => {
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              base64: true,
             });
 
             if (result.canceled) {
                 router.back();
                 return;
             }
-
-            if (result.assets[0].base64) {
-                setImage(result.assets[0].uri);
-                setImageBase64(result.assets[0].base64);
+        
+            if (result.assets && result.assets[0].base64) {
+              setImage(result.assets[0].uri);
+              setImageBase64(result.assets[0].base64);
             }
         };
 
-        openCamera();
-        //setReceipt(demo);
+        pickImage();
         setLoading(false);
     }, []);
 

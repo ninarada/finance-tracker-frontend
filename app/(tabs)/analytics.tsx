@@ -1,6 +1,7 @@
 import CategorySpendingPieChart from "@/components/charts/CategoryPieChart";
 import SpendingLineChart from "@/components/charts/SpendingLineChart";
 import { getMyReceipts } from "@/services/receiptsService";
+import { Receipt } from "@/types/receipt";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -8,23 +9,6 @@ import { Alert, Text, View } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import tw from 'tailwind-react-native-classnames';
-type Receipt = {
-  _id: string;
-  user: string;
-  date: string;
-  items: {
-    name: string;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-    category?: string;
-  }[];
-  totalAmount: number;
-  note?: string;
-  paymentMethod?: 'Cash' | 'Card' | 'Mobile' | 'Other';
-  tags?: string[];
-  store?: string;
-};
 
 const optionsTimeframe = [
   { label: 'All', value: 12 },
@@ -80,24 +64,17 @@ const Analytics = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView className="h-screen-safe">
-        <View className="flex-1 items-center px-5 ">
-          <Text className="text-2xl font-bold mb-5">Analytics</Text>
+        <View className="items-center px-5 py-5">
 
-              <Text className="text-2xl font-semibold text-center mb-4 text-[#174982]">
-                Spending Overview by Category
-              </Text>
-  
-              {receipts.length > 0 ? (
-                <CategorySpendingPieChart receipts={receipts} />
-              ) : (
-                <Text className="text-gray-500 mt-10">No data available.</Text>
-              )}
+          <Text className="text-2xl font-semibold text-center mb-4 text-slate-800">Spending Overview by Category</Text>
+          {receipts.length > 0 ? (
+            <CategorySpendingPieChart receipts={receipts} />
+          ) : (
+            <Text className="text-gray-500 mt-10">No data available.</Text>
+          )}
 
-              <Text className="text-2xl font-semibold text-center mt-5 mb-4 text-[#174982]">
-                  Spending Over Time
-              </Text>
-
-              <View className="w-full  mb-2">
+          <Text className="text-2xl font-semibold text-center mt-5 mb-4 text-[#174982]">Spending Over Time</Text>
+          <View className="w-full  mb-2">
                 <View>
                   <DropDownPicker
                     open={timeframeMenuVisible}

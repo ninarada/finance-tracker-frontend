@@ -99,7 +99,7 @@ const History = () => {
 
                                 {/* Item Rows */}
                                 {selectedReceipt?.items.map((item, i) => (
-                                    <View key={i} className="py-1">
+                                    <View key={i} className="py-2">
                                         <View  className="flex-row">
                                             <Text className="w-1/3 text-gray-700">{item.name}</Text>
                                             <Text className="w-1/6 text-right text-gray-700">€{item.unitPrice?.toFixed(2)}</Text>
@@ -112,8 +112,10 @@ const History = () => {
                                     </View>
                                 ))}
                             </View>
-
-                            <Text className="text-gray-800 text-right mb-2">Total: €{selectedReceipt?.totalAmount.toFixed(2)}</Text>
+                            {selectedReceipt?.totalAmount && (
+                                <Text className="text-gray-800 text-right mb-2">Total: €{selectedReceipt.totalAmount.toFixed(2)}</Text>
+                            )}
+                            
                             <Text className="text-sm text-gray-500 mb-1">Payment: {selectedReceipt?.paymentMethod}</Text>
 
                             {selectedReceipt?.note && (
