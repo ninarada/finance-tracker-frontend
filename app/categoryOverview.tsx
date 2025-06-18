@@ -1,0 +1,196 @@
+import ReceiptModal from '@/components/ReceiptModal';
+import { getCategoryItems, getReceiptById } from '@/services/receiptsService';
+import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from 'react';
+import { Alert, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
+const CategoryOverview = () => {
+  const { name } = useLocalSearchParams<{ name: string }>();
+  const router = useRouter();
+  const [categoryItems, setCategoryItems] = useState<any[]>([]);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
+  const [sortOption, setSortOption] = useState<'name' | 'totalPrice'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortMenuVisible, setSortMenuVisible] = useState(false);
+  
+  useEffect(() => {
+    const fetchCategoryItems = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          router.replace("/sign-in");
+        } else {
+          const data = await getCategoryItems(token, name);
+          setCategoryItems(data);
+          const dataStats = await fetchCategoryStatsByName(token, name);
+          setCategoryStats([dataStats]); 
+        }
+      } catch (error) {
+        Alert.alert("Error", "Failed to load profile data.");
+      }
+    };
+
+    fetchCategoryItems();
+  }, []);
+
+  const handleViewReceipt = async (receiptId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        router.replace("/sign-in");
+        return;
+      }
+      const receipt = await getReceiptById(token, receiptId);
+      setSelectedReceipt(receipt);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load receipt.");
+    }
+  };
+
+  // useEffect(() => {
+  //   console.log("Updated categoryItems:", categoryStats);
+  // }, [categoryStats]);
+
+  const sortedCategoryItems = [...categoryItems].sort((a, b) => {
+    if (sortOption === 'name') {
+      if (sortDirection === 'asc') {
+        return a.name.localeCompare(b.name);
+      } else {
+        return b.name.localeCompare(a.name);
+      }
+    } else if (sortOption === 'totalPrice') {
+      if (sortDirection === 'asc') {
+        return a.totalPrice - b.totalPrice;
+      } else {
+        return b.totalPrice - a.totalPrice;
+      }
+    }
+    return 0;
+  });  
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView className='flex-1'>
+            <ScrollView className="px-5">
+                <Pressable onPress={() => router.back()} className="flex-row items-center gap-2">
+                    <FontAwesome size={15} name="arrow-left" color="#64748b"/>
+                    <Text className="text-slate-500 font-medium text-xl">back</Text>
+                </Pressable>
+
+                {categoryStats.length > 0 && (
+                  <View className="bg-primary-50 rounded-2xl p-4 mb-7 mt-3 shadow">
+                    <View className="flex-1 items-center mb-4">
+                      <Text className="text-3xl font-bold my-1 text-purple-800">{name}</Text>
+                    </View>
+                    <View className='gap-2 items-center pb-2'>
+                      <Text className="text-md font-medium">Total spent: €{categoryStats[0].totalSpent.toFixed(2)}</Text>
+                      <Text className="text-md font-medium">Most popular store: {categoryStats[0].mostPopularStore || 'N/A'}</Text>
+                    </View>
+                    
+                </View>
+                )}
+
+                {categoryItems.length >0 && (<View className="flex-row mb-3">
+                  <TouchableOpacity
+                    onPress={() => setSortMenuVisible(true)}
+                    className="bg-primary-200 px-6 py-1 rounded-full"
+                  >
+                    <Text className="text-white text-md font-semibold text-center" >Sort</Text>
+                  </TouchableOpacity>
+                </View>)}
+
+                {categoryItems.length === 0 ? (
+                    <Text className="text-center text-gray-500">No items found in this category.</Text>
+                ) : (
+                  sortedCategoryItems.map((item, index) => (
+                    <View key={index} className="bg-white rounded-2xl p-4 mb-5 shadow">
+                        <View className='flex-row justify-between'>
+                            <Text className="font-bold text-lg text-purple-950">{item.name}</Text>
+                            <Text className="text-md text-gray-700">
+                                {item.receiptDate ? new Date(item.receiptDate).toLocaleDateString() : "Unknown"}
+                            </Text>
+                        </View>
+                        <Text className="text-sm text-gray-700">Quantity: {item.quantity}</Text>
+                        <Text className="text-sm text-gray-700">Unit Price: ${item.unitPrice}</Text>
+                        <Text className="text-sm text-gray-700">Total Price: ${item.totalPrice}</Text>
+
+                        <View className="mt-2 border-t border-gray-200 pt-2 flex-row justify-between items-center">
+                            <View>
+                                <Text className="text-xs text-gray-600">
+                                    Store: <Text className="font-bold">{item.receiptStore || "Unknown"}</Text>
+                                </Text>
+                                <Text className="text-xs text-gray-600">Receipt Total: ${item.receiptTotal ?? "N/A"}</Text>
+                            </View>
+                            <TouchableOpacity 
+                                onPress={() => handleViewReceipt(item.receiptId)}
+                                className="px-4 py-1 rounded-2xl bg-primary-50 items-center justify-center" 
+                            >
+                                <Text className="text-primary-250 text-sm font-semibold">View Receipt</Text>
+                            </TouchableOpacity>
+                        </View>
+                        
+                    </View>
+                    ))
+                )}
+
+                <ReceiptModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)}/>
+
+                <Modal
+                  transparent
+                  visible={sortMenuVisible}
+                  animationType="fade"
+                  onRequestClose={() => setSortMenuVisible(false)}
+                >
+                  <Pressable
+                    style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }}
+                    onPress={() => setSortMenuVisible(false)}
+                  >
+                    <View className="absolute bg-white rounded-xl py-2 w-[220px] shadow-lg mt-80 ml-5">
+                      {[
+                        { label: 'Name (A → Z)', option: 'name', direction: 'asc' },
+                        { label: 'Name (Z → A)', option: 'name', direction: 'desc' },
+                        { label: 'Total Price (Low → High)', option: 'totalPrice', direction: 'asc' },
+                        { label: 'Total Price (High → Low)', option: 'totalPrice', direction: 'desc' },
+                      ].map(({ label, option, direction }) => {
+                        const isActive = sortOption === option && sortDirection === direction;
+                        return (
+                          <TouchableOpacity
+                            key={label}
+                            onPress={() => {
+                              setSortOption(option as 'name' | 'totalPrice');
+                              setSortDirection(direction as 'asc' | 'desc');
+                              setSortMenuVisible(false);
+                            }}
+                            style={{
+                              paddingVertical: 10,
+                              paddingHorizontal: 16,
+                              backgroundColor: isActive ? '#e0e7ff' : 'transparent',
+                              borderRadius: 8,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: isActive ? '#4f46e5' : '#111827',
+                                fontWeight: isActive ? '600' : '400',
+                              }}
+                            >
+                              {label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </Pressable>
+                </Modal>
+            </ScrollView>
+        </SafeAreaView>
+    </SafeAreaProvider>
+  );
+};
+
+export default CategoryOverview;

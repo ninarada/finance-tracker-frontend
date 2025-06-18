@@ -1,6 +1,7 @@
 import MonthsBarChart from "@/components/charts/MonthsBarChart";
+import NewCategoryModal from "@/components/newCategoryModal";
 import { images } from "@/constants/images";
-import { getMyReceipts } from "@/services/receiptsService";
+import { createCategory, getMyReceipts } from "@/services/receiptsService";
 import { AnalysisResult, Receipt } from "@/types/receipt";
 import { analyzeReceiptsThisMonth } from "@/utils/analyzeReceiptsThisMonth";
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +11,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getMyProfile } from "../../services/userService";
 
@@ -20,6 +21,7 @@ const Home = () => {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [userPhoto, setUserPhoto] = useState<any>(images.profile_picture); 
   const [thisMonthData, setThisMonthData] = useState<AnalysisResult>();
+  const [newCategoryModalVisible, setNewCategoryModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -52,7 +54,47 @@ const Home = () => {
     }
     console.log(thisMonthData)
     
-  }, [receipts])
+  }, [receipts]);
+
+  const handleCategoryPress = (name: string) => {
+    router.push({
+      pathname: "/categoryOverview",
+      params: { name },
+    });
+  };
+
+  const handleCreateCategory = async (name: string) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        router.replace("/sign-in");
+        setUser(null);
+        return;
+      } 
+      const data = await createCategory(token, name);
+      setUser((prevUser: any) => ({
+        ...prevUser,
+        categories: data.categories,
+      }));
+      Alert.alert('Success', 'Category created successfully.',
+        [
+          {
+            text: 'Close',
+            onPress: () => console.log('Alert closed'),  
+            style: 'cancel',
+          },
+          {
+            text: 'See Category',
+            onPress: () => {handleCategoryPress(name)},
+            style: 'default',
+          },
+        ],
+        { cancelable: true }
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error?.message || 'Failed to create category.');
+    }
+  };
   
   return (
     <SafeAreaProvider>
@@ -167,7 +209,7 @@ const Home = () => {
           <View className="gap-3 mb-7">
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-xl  text-text">Categories</Text>
-              <Pressable onPress={() => router.push('/')} className="bg-primary-50 rounded-full px-3">
+              <Pressable onPress={() => setNewCategoryModalVisible(true)} className="bg-primary-50 rounded-full px-3">
                 <Text className="text-primary-200 text-center text-md py-1 font-semibold">
                   add new +
                 </Text>
@@ -175,15 +217,19 @@ const Home = () => {
             </View>
             {user && (
               <View className="flex-row flex-wrap gap-3 justify-evenly">
-                {user.categories.length > 0 &&  user.categories.slice(0, 9).map((category: string, index: React.Key | null | undefined) => (
-                  <View key={index} className="px-4 py-2 rounded-2xl bg-primary-100 items-center justify-center" >
-                    <Text className="text-white  font-semibold">{category}</Text>
-                  </View>
+                {user.categories.length > 0 &&  user.categories.slice(0, 6).map((category: string, index: React.Key | null | undefined) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleCategoryPress(category)}
+                      className="px-4 py-2 rounded-2xl bg-primary-100 items-center justify-center" 
+                    >
+                      <Text className="text-white  font-semibold">{category}</Text>
+                    </TouchableOpacity>
                 ))}
               </View>
             )}
             <View className="flex-row justify-center">
-              <Pressable onPress={() => router.push('/')} className="px-5 py-1  rounded-2xl bg-primary-50 ">
+              <Pressable onPress={() => router.push('/categories')} className="px-5 py-1  rounded-2xl bg-primary-50 ">
                 <Text className="text-primary-200 text-center text-lg font-semibold">
                   see more
                 </Text>
@@ -191,6 +237,12 @@ const Home = () => {
             </View>
             
           </View>
+
+          <NewCategoryModal 
+            visible={newCategoryModalVisible}
+            onClose={() => setNewCategoryModalVisible(false)}
+            onCreate={handleCreateCategory}
+          />
           
         </ScrollView>
       </SafeAreaView>

@@ -1,5 +1,8 @@
 import { processReceiptImage } from "@/services/gcloudAPI";
+import { createReceipt } from "@/services/receiptsService";
 import { getMyProfile } from "@/services/userService";
+import { ScannedReceipt } from "@/types/receipt";
+import { convertParsedReceiptToMongooseFormat } from "@/utils/convertParsedReceiptToMongooseFormat";
 import { getSuggestedCategory } from '@/utils/getSuggestedCategory';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,43 +11,24 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-const demo = {
-    "date": "31.12.2007",
-    "items": [
-      {
-        "itemName": "Apple",
-        "itemQuantity": "1x",
-        "itemTotalPrice": "0,70",
-        "itemUnitPrice": "0,70"
-      },
-      {
-        "itemName": "SUNKA",
-        "itemQuantity": "1x",
-        "itemTotalPrice": "1,00",
-        "itemUnitPrice": "1,00"
-      },
-      {
-        "itemName": "JAJCE",
-        "itemQuantity": "3x",
-        "itemTotalPrice": "1,20",
-        "itemUnitPrice": "0,40"
-      },
-    ],
-    "location": "Sp.trg 4, 4220 Škofja Loka",
-    "paymentMethod": "GOTOVINA",
-    "storeName": "Gostilna PRAJERCA",
-    "totalAmount": "2,90",
-    "note": "",
-    "tags": []
-}
+const initialScannedReceipt: ScannedReceipt = {
+    date: "",
+    items: [],
+    location: "",
+    paymentMethod: "",
+    storeName: "",
+    totalAmount: "",
+    note: "",
+    tags: []
+};
 
 const ScanNewReceipt = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [image, setImage] = useState<string | null>(null);
     const [imageBase64, setImageBase64] = useState<string>('');
-    const [receipt, setReceipt] = useState<any>(null);
-
+    const [receipt, setReceipt] = useState<ScannedReceipt>(initialScannedReceipt);
+    
     const [suggestedChecked, setSuggestedChecked] = useState(false);
     const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
     const [itemCategories, setItemCategories] = useState<{ [key: number]: string[] }>({});
@@ -114,7 +98,7 @@ const ScanNewReceipt = () => {
     const detectTextFromImage = async () => {
         if (!image) return;
         setLoading(true);
-        setReceipt('');
+        setReceipt(initialScannedReceipt);
         try {
           const result = await processReceiptImage({
             uri: image,
@@ -125,7 +109,7 @@ const ScanNewReceipt = () => {
           setReceipt(result);
         } catch (error) {
           console.error(error);
-          setReceipt('Failed to process receipt.');
+          setReceipt(initialScannedReceipt);
         } finally {
           setLoading(false);
         }
@@ -195,6 +179,34 @@ const ScanNewReceipt = () => {
           setItemCategories({});
         }
     };  
+
+    const handleSave = async() => {
+        const itemsWithCategories = receipt.items.map((item, index) => ({
+            ...item,
+            categories: itemCategories[index] || [],
+        }));
+          
+        const updatedReceipt = {
+            ...receipt,
+            items: itemsWithCategories,
+        };
+        
+        const parsed = convertParsedReceiptToMongooseFormat(updatedReceipt);
+
+        try {
+            const token = await AsyncStorage.getItem('token');
+            
+            if(token && parsed.store && parsed.items.length>0) {
+              const response = await createReceipt(token, parsed);
+              console.log("Response:", response);
+            }
+          } catch (error) {
+            Alert.alert('Creating new receipt failed', 'Something went wrong. Please try again.');
+          }
+      
+          setReceipt(initialScannedReceipt);
+          router.back();
+    }
 
     return (
             <View className="flex-1 pt-12 bg-black/50">
@@ -285,7 +297,7 @@ const ScanNewReceipt = () => {
                                 )}
                                 </>
                             )}
-                            <Pressable className="mt-3 bg-primary-250 px-4 py-2 rounded-xl">
+                            <Pressable onPress={handleSave} className="mt-3 bg-primary-250 px-4 py-2 rounded-xl">
                                 <Text className="text-white text-center font-semibold">Save</Text>
                             </Pressable>
                         </View>

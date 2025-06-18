@@ -14,6 +14,9 @@ export interface Receipt {
     user: string;
     store?: string;
     date: string;
+    __v?: number;               
+    createdAt: string;          
+    updatedAt: string; 
     totalAmount: number;
     items: ReceiptItem[];
     paymentMethod?: PaymentMethod;
@@ -28,7 +31,28 @@ export interface CreateReceipt{
     tags?: string[];
     store?: string;
     date?: string | Date;
+    totalAmount?: number;
 }
+
+export interface ScannedItem {
+    itemName: string;
+    itemQuantity: string;      
+    itemTotalPrice: string;    
+    itemUnitPrice: string; 
+    categories?: string[];
+}
+  
+export  interface ScannedReceipt {
+    date: string;              
+    items: ScannedItem[];
+    location?: string;
+    paymentMethod?: string;
+    storeName?: string;
+    totalAmount?: string;      
+    note?: string;
+    tags?: string[];
+}
+  
 
 export interface MostExpensiveItem {
     name: string;

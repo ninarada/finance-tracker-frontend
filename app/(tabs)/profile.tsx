@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { getMyProfile, getUserStats, updateProfile } from "../../services/userService";
 
@@ -84,6 +84,13 @@ const Profile = () => {
     }
   }
 
+  const handleCategoryPress = (name: string) => {
+    router.push({
+      pathname: "/categoryOverview",
+      params: { name },
+    });
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView>
@@ -162,14 +169,16 @@ const Profile = () => {
             <View className='flex-row gap-3 flex-wrap justify-center'>
             {stats?.topCategories.length > 0 ? stats?.topCategories.map((item: { category: string }, index: React.Key ) => {
                 return (
-                  <Pressable key={index} className="justify-center items-center bg-primary-50 rounded-3xl px-6 py-1">
-                    <Text className="text-primary-250 text-center text-xl font-semibold">
-                      {item.category}
-                    </Text>
-                  </Pressable>
+                  <TouchableOpacity
+                      key={index}
+                      onPress={() => handleCategoryPress(item.category)}
+                      className="justify-center items-center bg-primary-50 rounded-3xl px-6 py-1" 
+                    >
+                      <Text className="text-primary-250 text-center text-xl font-semibold">{item.category}</Text>
+                    </TouchableOpacity>
                 );
               }) : (
-                <Text>No categories.</Text>
+                <Text>No categories.</Text> 
               )}
             </View>
           </View>
