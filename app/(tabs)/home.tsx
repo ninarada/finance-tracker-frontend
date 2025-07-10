@@ -130,13 +130,13 @@ const Home = () => {
    
           <View className="flex-row justify-between items-center mb-7 bg-white px-5 py-7 rounded-3xl shadow-sm">
             <View className="flex-row items-center gap-3">
-              <Image source={userPhoto} className="w-14 h-14 rounded-full" resizeMode="contain"/>
+              <Image source={userPhoto} className="w-16 h-16 rounded-full" />
               <View>
                 <Text className="text-xl font-bold text-text">Hello, </Text>
                 <Text className="text-xl font-bold text-text">{user?.name ? `${user.name}` : ""}!</Text>
               </View>
             </View>
-            <FontAwesome size={32} name="bell-o" color="#64748B"/>
+            <FontAwesome size={28} name="bell-o" color="#64748B"/>
           </View>
 
           <View className="gap-3 mb-7">

@@ -27,12 +27,21 @@ export const fetchCategoryStatsByName = async (
     const storeCounts: Record<string, number> = {};
   
     filteredReceipts.forEach(receipt => {
-      const receiptTotal = receipt.totalAmount || 0;
-      totalSpent += receipt.totalAmount || 0; // use totalAmount from receipt
+      const matchingItems = receipt.items.filter(item =>
+        item.categories?.includes(categoryName)
+      );
+      const matchingTotal = matchingItems.reduce(
+        (sum, item) => sum + (item.totalPrice || 0),
+        0
+      );
+      totalSpent += matchingTotal;
 
       const receiptDate = new Date(receipt.date);
-      if (receiptDate.getMonth() === currentMonth && receiptDate.getFullYear() === currentYear) {
-        thisMonthsSpendings += receiptTotal;
+      if (
+        receiptDate.getMonth() === currentMonth &&
+        receiptDate.getFullYear() === currentYear
+      ) {
+        thisMonthsSpendings += matchingTotal;
       }
   
       const store = receipt.store || 'Unknown';

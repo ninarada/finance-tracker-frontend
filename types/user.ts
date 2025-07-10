@@ -10,6 +10,10 @@ export interface UpdatedProfileData {
     surname?: string;
     location?: string;
     bio?: string;
-    photo?: string;
+    photo?: {
+        uri: string;
+        name: string;
+        type: string;
+    } | null;
 }
   

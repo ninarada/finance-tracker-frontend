@@ -1,3 +1,4 @@
+import mime from "mime";
 import { UpdatedProfileData, User } from "../types/user";
 import apiClient from "./apiClient";
 
@@ -63,9 +64,29 @@ export const getUserStats = async (token: string) => {
 
 export const updateProfile = async (token: string, updatedData: UpdatedProfileData) => {
   try {
-    const response = await apiClient.put('/api/users/updateProfile', updatedData, {
+    const formData = new FormData();
+
+    if (updatedData.name) formData.append("name", updatedData.name);
+    if (updatedData.surname) formData.append("surname", updatedData.surname);
+    if (updatedData.location) formData.append("location", updatedData.location);
+    if (updatedData.bio) formData.append("bio", updatedData.bio);
+
+    if (updatedData.photo?.uri) {
+      const fileUri = updatedData.photo.uri;
+      const fileType = mime.getType(fileUri) || "image/jpeg";
+      const fileName = fileUri.split("/").pop();
+
+      formData.append("photo", {
+        uri: fileUri,
+        name: fileName,
+        type: fileType,
+      } as any); 
+    }
+
+    const response = await apiClient.put('/api/users/updateProfile', formData, {
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;

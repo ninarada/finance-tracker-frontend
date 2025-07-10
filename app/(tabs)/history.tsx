@@ -177,7 +177,7 @@ const History = () => {
                     <TouchableOpacity
                         key={receipt._id || index}
                         onPress={() => openReceiptModal(receipt)}
-                        className="bg-white rounded-2xl p-4 mb-5 shadow"
+                        className="bg-white rounded-2xl p-4 mb-5 shadow-sm"
                     >
                     <Text className="text-lg font-semibold mb-1">Store: {receipt.store || "Unknown"}</Text>
                     <Text className="text-sm text-gray-500 mb-1">

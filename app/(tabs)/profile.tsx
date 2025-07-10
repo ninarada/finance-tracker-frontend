@@ -49,14 +49,21 @@ const Profile = () => {
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images as any,
       quality: 1,
-      base64: true,
+      base64: true, 
     });
   
     if (!result.canceled && result.assets.length > 0) {
       const selectedImage = result.assets[0];
-      setEditUser({ ...editUser, photo: selectedImage.uri });
+      setEditUser({
+        ...editUser,
+        photo: {
+          uri: selectedImage.uri,
+          name: selectedImage.fileName || "photo.jpg",
+          type: selectedImage.type || "image/jpeg",
+        },
+      });
     }
   };  
 
@@ -97,26 +104,31 @@ const Profile = () => {
         <ScrollView className="min-h-full p-2">
           <View className="relative h-65 pb-5 mx-2 justify-center items-center">
             <View className="absolute inset-0">
-              <View className="flex-1 bg-primary-100 rounded-xl" />
-              <View className="flex-1 bg-background-light rounded-xl" />
+              <View className="flex-1 bg-primary-100 shadow-sm"  style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, borderBottomLeftRadius: 0, borderBottomRightRadius: 0,}}/>
+              <View className="flex-1 bg-background-light shadow-sm" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 16, borderBottomRightRadius: 16,}}/>
             </View>
             <Pressable
               onPress={() => router.push("/settings")}
               className="absolute top-4 right-4 z-10"
             >
-              <FontAwesome size={32} name="gear" color="#64748B"/>
+              <View className='shadow-sm'>
+                <FontAwesome size={32} name="gear" color="#9ca3af"/>
+              </View>
             </Pressable>
             <View className="items-center z-1 gap-2">
-              <Image
+              <View className='shadow-sm'>
+                 <Image
                 source={{ uri: user?.photo }}
-                className="w-32 h-32 rounded-full border-4 border-white mb-1 mt-12"
+                className="w-32 h-32 rounded-full border-2 border-white mb-1 mt-12"
               />
+              </View>
+             
               <Text className="text-xl font-semibold">{user?.name || "Loading..."} {user?.surname || "Loading..."}</Text>
               <Text className="text-gray-600">@{user?.username || "Loading..."}</Text>
             </View>
           </View>
 
-          <View className='bg-background-light rounded-xl m-2 py-3'> 
+          <View className='bg-background-light rounded-xl m-2 py-3  shadow-sm'> 
             <View className="bg-background-light p-2 rounded-lg mx-2">
               <Text className="text-text-light text-md">Email</Text>
               <Text className="text-text text-lg font-medium">{user?.email}</Text>
@@ -142,12 +154,12 @@ const Profile = () => {
             </View>
           </View>
 
-          <View className='flex-row justify-between bg-background-light rounded-xl m-2 py-5 px-4'>
+          <View className='flex-row justify-between bg-background-light rounded-xl m-2 py-5 px-4  shadow-sm'>
             <Text className="text-text text-lg font-medium">This Month's Spending: </Text>
             <Text className="text-text text-lg font-medium">{stats?.currentMonthSpent}€</Text>
           </View>
 
-          <View className='bg-background-light rounded-xl m-2 py-5 px-4 flex-row justify-evenly gap-2'>
+          <View className='bg-background-light rounded-xl m-2 py-5 px-4 flex-row justify-evenly gap-2  shadow-sm'>
             <View className='justify-center items-center'>
               <Text className="text-text text-lg font-medium">Receipts</Text>
               <Text className="text-text text-lg font-medium">{stats?.totalReceipts}</Text>
@@ -164,15 +176,15 @@ const Profile = () => {
             </View>
           </View>
 
-          <View className='bg-background-light rounded-xl m-2 py-5 px-4 flex-col gap-2'>
-            <Text className="text-text text-lg font-medium mb-2">Top Categories:</Text>
+          <View className='bg-background-light rounded-xl m-2 py-5 px-4 flex-col gap-2  shadow-sm'>
+            <Text className="text-text text-md text-center font-medium mb-2 uppercase">Top Categories</Text>
             <View className='flex-row gap-3 flex-wrap justify-center'>
             {stats?.topCategories.length > 0 ? stats?.topCategories.map((item: { category: string }, index: React.Key ) => {
                 return (
                   <TouchableOpacity
                       key={index}
                       onPress={() => handleCategoryPress(item.category)}
-                      className="justify-center items-center bg-primary-50 rounded-3xl px-6 py-1" 
+                      className="justify-center items-center bg-primary-50 rounded-3xl px-6 py-1 shadow-sm" 
                     >
                       <Text className="text-primary-250 text-center text-xl font-semibold">{item.category}</Text>
                     </TouchableOpacity>
@@ -185,11 +197,11 @@ const Profile = () => {
 
           <View className="flex-row mt-4 mb-5">
             <View className='w-1/2'>
-            <Pressable onPress={() => setEditingMode(true)} className="mr-1 h-20 justify-center items-center bg-primary-200 rounded-xl">
+            <Pressable onPress={() => setEditingMode(true)} className="mr-1 h-20 justify-center items-center shadow-sm bg-primary-200 rounded-xl">
               <Text className="text-white text-center text-xl font-semibold uppercase">Edit</Text>
             </Pressable></View>
             <View className='w-1/2'>
-            <Pressable onPress={handleLogout} className="ml-1 h-20 justify-center items-center bg-primary-100 rounded-xl">
+            <Pressable onPress={handleLogout} className="ml-1 h-20 justify-center items-center bg-primary-100 rounded-xl shadow-sm">
               <Text className="text-white text-center text-xl font-semibold uppercase">Log Out</Text>
             </Pressable></View>
           </View>
