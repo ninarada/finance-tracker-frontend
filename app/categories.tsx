@@ -1,9 +1,11 @@
+import NewCategoryModal from '@/components/newCategoryModal';
+import { createCategory } from '@/services/receiptsService';
 import { getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,28 +16,56 @@ const AllCategories = () => {
     const [sortOption, setSortOption] = useState<"name" | "total">("total");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
+    const [newCategoryModalVisible, setNewCategoryModalVisible] = useState(false);
       
-    useEffect(() => {
-        const fetchCategoriesAndStats = async () => {
+    // useEffect(() => {
+    //     const fetchCategoriesAndStats = async () => {
+    //     try {
+    //         const token = await AsyncStorage.getItem('token');
+    //         if (!token) {
+    //             router.replace('/sign-in');
+    //             return;
+    //         }
+    //         const profile = await getMyProfile(token);
+    //         const categories = profile.categories || [];
+    //         const statsPromises = categories.map((category: string) =>fetchCategoryStatsByName(token, category));
+    //         const statsResults = await Promise.all(statsPromises);
+    //         setCategoryStats(statsResults);
+    //     } catch (error) {
+    //         Alert.alert('Error', 'Failed to load categories and stats.');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    //     };
+    //     fetchCategoriesAndStats();
+    // }, []);
+    
+    const fetchCategoriesAndStats = async () => {
         try {
-            const token = await AsyncStorage.getItem('token');
-            if (!token) {
+          const token = await AsyncStorage.getItem('token');
+          if (!token) {
             router.replace('/sign-in');
             return;
-            }
-            const profile = await getMyProfile(token);
-            const categories = profile.categories || [];
-            const statsPromises = categories.map((category: string) =>fetchCategoryStatsByName(token, category));
-            const statsResults = await Promise.all(statsPromises);
-            setCategoryStats(statsResults);
+          }
+          const profile = await getMyProfile(token);
+          const categories = profile.categories || [];
+          const statsPromises = categories.map((category: string) =>
+            fetchCategoryStatsByName(token, category)
+          );
+          const statsResults = await Promise.all(statsPromises);
+          setCategoryStats(statsResults);
         } catch (error) {
-            Alert.alert('Error', 'Failed to load categories and stats.');
+          Alert.alert('Error', 'Failed to load categories and stats.');
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
-        };
-        fetchCategoriesAndStats();
-    }, []);
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+          fetchCategoriesAndStats();
+        }, [])
+    );
 
     const handleCategoryPress = (name: string) => {
         router.push({
@@ -66,6 +96,37 @@ const AllCategories = () => {
         setSortMenuVisible(false);
     };
 
+    const handleCreateCategory = async (name: string) => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            if (!token) {
+              router.replace("/sign-in");
+              return;
+            } 
+            const data = await createCategory(token, name);
+            const newCategoryStats = await fetchCategoryStatsByName(token, name);
+            setCategoryStats(prev => [...prev, newCategoryStats]);
+            setNewCategoryModalVisible(false);
+            Alert.alert('Success', 'Category created successfully.',
+              [
+                {
+                  text: 'Close',
+                  onPress: () => console.log('Alert closed'),  
+                  style: 'cancel',
+                },
+                {
+                  text: 'See Category',
+                  onPress: () => {handleCategoryPress(name)},
+                  style: 'default',
+                },
+              ],
+              { cancelable: true }
+            );
+          } catch (error: any) {
+            Alert.alert('Error', error?.message || 'Failed to create category.');
+          }
+    }
+
     return (
         <SafeAreaProvider>
         <SafeAreaView className="flex-1">
@@ -79,12 +140,18 @@ const AllCategories = () => {
                     <Text className="text-2xl font-bold mb-3 text-purple-900">Categories</Text>
                 </View>
 
-                <View className='flex-row mb-4'>
+                <View className='flex-row mt-2 mb-4 justify-between'>
                     <TouchableOpacity
                         onPress={openSortMenu}
-                        className="bg-primary-100 px-10 py-2 rounded-full"
+                        className="bg-primary-200 px-10 py-2 rounded-full"
                     >
                         <Text className="text-white font-semibold text-center">Sort</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setNewCategoryModalVisible(true)}
+                        className="bg-primary-50 px-10 py-2 rounded-full"
+                    >
+                        <Text className="text-primary-250 font-semibold text-center">Add New +</Text>
                     </TouchableOpacity>
                 </View>
                 
@@ -152,6 +219,11 @@ const AllCategories = () => {
                 </View>
             </Pressable>
           </Modal>
+          <NewCategoryModal 
+            visible={newCategoryModalVisible}
+            onClose={() => setNewCategoryModalVisible(false)}
+            onCreate={handleCreateCategory}
+          />
             </ScrollView>
         </SafeAreaView>
         </SafeAreaProvider>

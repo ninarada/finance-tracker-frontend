@@ -1,14 +1,27 @@
-// components/ReceiptModal.tsx
 import { Receipt } from "@/types/receipt";
+import { useRouter } from "expo-router";
 import React from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
 
 interface ReceiptModalProps {
   receipt: Receipt | null;
   onClose: () => void;
+  
 }
 
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
+  if (receipt === null) return;
+  
+  const router = useRouter();
+
+  const handleReceiptEditPress = (receiptId: string) => {
+    onClose();
+    router.push({
+      pathname: "/editReceipt",
+      params: { receiptId },
+    });
+  };
+
   return (
     <Modal
       animationType="slide"
@@ -18,6 +31,9 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
     >
       <View className="flex-1 justify-center items-center bg-black/50 px-5">
         <View className="bg-white w-full rounded-2xl p-5">
+          <TouchableOpacity onPress={() => handleReceiptEditPress(receipt._id)} className="items-end">
+            <Text>edit</Text>
+          </TouchableOpacity>
           <Text className="text-xl font-bold mb-2">{receipt?.store || "Receipt"}</Text>
           <Text className="text-sm text-gray-500 mb-2">
             Date: {receipt ? new Date(receipt.date).toLocaleDateString() : ""}

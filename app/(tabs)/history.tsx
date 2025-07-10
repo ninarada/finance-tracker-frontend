@@ -19,6 +19,7 @@ const History = () => {
     const [sortOption, setSortOption] = useState<SortOption>("recent");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+    const [isEditing, setIsEditing] = useState(false);
 
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         storeName: "",
@@ -123,6 +124,27 @@ const History = () => {
         setModalVisible(false);
     };
 
+    const openReceiptModal = (receipt: Receipt) => {
+        setSelectedReceipt(receipt);
+        setIsEditing(false);
+    };
+    
+    const closeModals = () => {
+        setSelectedReceipt(null);
+        setIsEditing(false);
+    };
+    
+
+    const handleEditClick = () => {
+        setIsEditing(true);
+    };
+
+    const handleSave = (updatedReceipt: Receipt) => {
+        // Save updated receipt to server or state here
+        console.log("Saved:", updatedReceipt);
+        setIsEditing(false);
+    };
+
     return (
         <SafeAreaProvider>
         <SafeAreaView className='flex-1'>
@@ -147,8 +169,6 @@ const History = () => {
                 </TouchableOpacity>
             </View>
 
-            
-
             {receipts.length === 0 ? (
                 <Text className="text-center text-gray-500">No receipts yet.</Text>
             ) : (
@@ -156,7 +176,7 @@ const History = () => {
                 {displayedReceipts.map((receipt, index) => (
                     <TouchableOpacity
                         key={receipt._id || index}
-                        onPress={() => setSelectedReceipt(receipt)}
+                        onPress={() => openReceiptModal(receipt)}
                         className="bg-white rounded-2xl p-4 mb-5 shadow"
                     >
                     <Text className="text-lg font-semibold mb-1">Store: {receipt.store || "Unknown"}</Text>
@@ -221,8 +241,21 @@ const History = () => {
                 </Pressable>
             </Modal>
 
-            <ReceiptModal receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)}/>
-            
+            {selectedReceipt && !isEditing && (
+                <ReceiptModal
+                    receipt={selectedReceipt}
+                    onClose={closeModals}
+                />
+            )}
+
+            {/* {selectedReceipt && isEditing && (
+                <EditReceiptModal
+                    receipt={selectedReceipt}
+                    onClose={closeModals}
+                    onSave={handleSave}
+                />
+            )}
+                     */}
             </ScrollView>
         </SafeAreaView>
         </SafeAreaProvider>

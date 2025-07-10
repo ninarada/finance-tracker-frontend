@@ -46,7 +46,7 @@ const SpendingLineChart: React.FC<Props> = ({ data, category, timeFrame }) => {
     };
 
   return (
-    <View className="px-4 pt-6 ">
+    <View className="w-full">
         <LineChart
             data={chartData}
             width={screenWidth - 48} 
@@ -72,8 +72,9 @@ const SpendingLineChart: React.FC<Props> = ({ data, category, timeFrame }) => {
             style={{
                 borderRadius: 10,
                 backgroundColor: '#fff',
-                padding: 20,
-                margin: 10
+                padding: 10,
+                margin: 10,
+                alignItems: 'center',
             }}
       />
     </View>

@@ -73,3 +73,18 @@ export const updateProfile = async (token: string, updatedData: UpdatedProfileDa
     throw new Error('Error updating profile.');
   }
 }
+
+export const deleteCategory = async (token: string, name:  string) => {
+  try {
+      const response = await apiClient.delete('/api/users/deleteCategory', {
+        params: { name },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+  } catch (error: any) {
+      const message = error?.response?.data?.message || "Error deleting category.";
+      throw new Error(message);
+  }
+}

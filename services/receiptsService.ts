@@ -64,6 +64,25 @@ export const createReceipt = async (token: string, data: CreateReceipt) => {
     }
 }
 
+export const updateReceipt = async (token: string, receiptId: string, data: CreateReceipt) => {
+    try {
+        const response = await apiClient.put(`/api/receipts/update/${receiptId}`, 
+            {
+                ...data,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error("Error updating receipt.");
+    }
+}
+
+
 export const createCategory = async (token: string, name:  string) => {
     try {
         const response = await apiClient.post('/api/users/newCategory', 

@@ -1,11 +1,14 @@
+import AverageReceiptValue from "@/components/analytics/AverageReceiptValue";
+import MonthlySpendingCard from "@/components/analytics/MonthlySpendingCard";
 import CategorySpendingPieChart from "@/components/charts/CategoryPieChart";
 import SpendingLineChart from "@/components/charts/SpendingLineChart";
+import StoreSpendingChart from "@/components/charts/StoreSpendingChart";
 import { getMyReceipts } from "@/services/receiptsService";
 import { Receipt } from "@/types/receipt";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import tw from 'tailwind-react-native-classnames';
@@ -35,7 +38,7 @@ const Analytics = () => {
   const [timeframeMenuVisible, setTimeframeMenuVisible] = useState(false);
   const router = useRouter();
   const [items, setItems] = useState(optionsTimeframe);
-  const [timeframeValue, setTimeframeValue] = useState(12); 
+  const [timeframeValue, setTimeframeValue] = useState(12);  
 
   useEffect(() => {
     const fetchReceipts = async () => {
@@ -50,7 +53,6 @@ const Analytics = () => {
                   date: r.date.slice(0, 10), // YYYY-MM-DD
                   total: r.totalAmount,
                 })).sort((a: { date: string | number | Date; }, b: { date: string | number | Date; }) => new Date(a.date).getTime() - new Date(b.date).getTime());;
-                // console.log(data);
                 setSpendingData(spendingsTemp);
             }
         } catch (error) {
@@ -63,20 +65,35 @@ const Analytics = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="h-screen-safe">
-        <View className="items-center px-5 py-5">
+      <SafeAreaView className='flex-1'>
+        <ScrollView className="px-5" >
+          <View className="flex-1 items-center">
+            <Text className="text-2xl font-bold my-5 text-purple-950">Analytics</Text>
+          </View>
 
-          <Text className="text-2xl font-semibold text-center mb-4 text-slate-800">Spending Overview by Category</Text>
-          {receipts.length > 0 ? (
-            <CategorySpendingPieChart receipts={receipts} />
-          ) : (
-            <Text className="text-gray-500 mt-10">No data available.</Text>
+          {receipts.length > 0 && (
+            <MonthlySpendingCard receipts={receipts}/>
           )}
 
-          <Text className="text-2xl font-semibold text-center mt-5 mb-4 text-[#174982]">Spending Over Time</Text>
+          {receipts.length > 0 && (
+            <AverageReceiptValue receipts={receipts} />
+          )}
+
+
+          <View className="mt-5 w-full py-2 px-3 rounded-2xl bg-white shadow-sm">
+            <Text className="text-2xl font-semibold text-center mt-5 mb-4 text-[#174982]">Spending Overview by Category</Text>
+            {receipts.length > 0 ? (
+              <CategorySpendingPieChart receipts={receipts} />
+            ) : (
+              <Text className="text-gray-500 mt-10">No data available.</Text>
+            )}
+          </View>
+          
+          <View className="mt-5 w-full py-2 px-3 rounded-2xl bg-white shadow-sm">
+            <Text className="text-2xl font-semibold text-center mt-5 mb-4 text-[#174982]">Spending Over Time</Text>
           <View className="w-full  mb-2">
-                <View>
-                  <DropDownPicker
+            <View>
+              <DropDownPicker
                     open={timeframeMenuVisible}
                     value={chosenTimeFrame.value}
                     items={items}
@@ -100,15 +117,21 @@ const Analytics = () => {
                     arrowIconStyle={tw`text-gray-600 text-sm`}
                     tickIconStyle={tw`text-green-500 text-sm`}
                   />                
-                </View>
-              </View>
+            </View>
+          </View>
 
-              {spendingData.length > 0 ? (
-                <SpendingLineChart data={spendingData} category={chosenCategory} timeFrame={chosenTimeFrame.value}/> 
-              ) :(
-                <Text className="text-gray-500 mt-10">No data available.</Text>
-              )}
-        </View>  
+          {spendingData.length > 0 ? (
+            <SpendingLineChart data={spendingData} category={chosenCategory} timeFrame={chosenTimeFrame.value}/> 
+          ) :(
+            <Text className="text-gray-500 mt-10">No data available.</Text>
+          )}
+          </View>
+
+
+          <StoreSpendingChart receipts={receipts} />
+          
+          <View className="p-5"></View>
+        </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
   );

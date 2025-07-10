@@ -1,5 +1,6 @@
 import ReceiptModal from '@/components/ReceiptModal';
 import { getCategoryItems, getReceiptById } from '@/services/receiptsService';
+import { deleteCategory } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -73,6 +74,37 @@ const CategoryOverview = () => {
     return 0;
   });  
 
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete Category",
+      `Are you sure you want to delete the category "${name}"? This will remove it from all receipts.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem("token");
+              if (!token) {
+                router.replace("/sign-in");
+                return;
+              }
+              await deleteCategory(token, name);
+              Alert.alert("Deleted", `Category "${name}" was deleted successfully.`);
+              router.back();
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to delete category.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView className='flex-1'>
@@ -83,7 +115,10 @@ const CategoryOverview = () => {
                 </Pressable>
 
                 {categoryStats.length > 0 && (
-                  <View className="bg-primary-50 rounded-2xl p-4 mb-7 mt-3 shadow">
+                  <View className="bg-primary-50 rounded-2xl px-5 pb-4 pt-3 mb-7 mt-3 shadow">
+                    <TouchableOpacity onPress={handleDelete} className='items-end'>
+                      <Text className='text-primary-300 text-sm font-medium'>delete</Text>
+                    </TouchableOpacity>
                     <View className="flex-1 items-center mb-4">
                       <Text className="text-3xl font-bold my-1 text-purple-800">{name}</Text>
                     </View>

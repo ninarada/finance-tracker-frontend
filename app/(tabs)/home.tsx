@@ -1,16 +1,18 @@
 import MonthsBarChart from "@/components/charts/MonthsBarChart";
 import NewCategoryModal from "@/components/newCategoryModal";
+import ReceiptCard from "@/components/ReceiptCard";
+import ReceiptModal from "@/components/ReceiptModal";
 import { images } from "@/constants/images";
 import { createCategory, getMyReceipts } from "@/services/receiptsService";
 import { AnalysisResult, Receipt } from "@/types/receipt";
 import { analyzeReceiptsThisMonth } from "@/utils/analyzeReceiptsThisMonth";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getMyProfile } from "../../services/userService";
@@ -22,38 +24,64 @@ const Home = () => {
   const [userPhoto, setUserPhoto] = useState<any>(images.profile_picture); 
   const [thisMonthData, setThisMonthData] = useState<AnalysisResult>();
   const [newCategoryModalVisible, setNewCategoryModalVisible] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        if (!token) {
-          router.replace("/sign-in");
-          setUser(null);
-        } else {
-          const profile = await getMyProfile(token);
-          setUser(profile);
-          if (profile.photo !== "/public/images/profile-picture.png") {
-            setUserPhoto({ uri: profile.photo }); 
-          }
-          const data = await getMyReceipts(token);
-          setReceipts(data);
-        }
-      } catch (error) {
-        Alert.alert("Error", "Failed to load profile data.");
+  // useEffect(() => {
+  //   const fetchUserProfile = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem("token");
+  //       if (!token) {
+  //         router.replace("/sign-in");
+  //         setUser(null);
+  //       } else {
+  //         const profile = await getMyProfile(token);
+  //         setUser(profile);
+  //         if (profile.photo !== "/public/images/profile-picture.png") {
+  //           setUserPhoto({ uri: profile.photo }); 
+  //         }
+  //         const data = await getMyReceipts(token);
+  //         setReceipts(data);
+  //       }
+  //     } catch (error) {
+  //       Alert.alert("Error", "Failed to load profile data.");
+  //     }
+  //   };
+
+  //   fetchUserProfile();
+  // }, []);
+
+  const fetchUserProfileAndReceipts = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        router.replace("/sign-in");
+        setUser(null);
+        return;
       }
-    };
+      const profile = await getMyProfile(token);
+      setUser(profile);
+      if (profile.photo !== "/public/images/profile-picture.png") {
+        setUserPhoto({ uri: profile.photo });
+      }
+      const data = await getMyReceipts(token);
+      setReceipts(data);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load profile data.");
+    }
+  };
 
-    fetchUserProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfileAndReceipts();
+    }, [])
+  );
 
   useEffect(() => {
     if(receipts) {
       const temp = analyzeReceiptsThisMonth(receipts);
       setThisMonthData(temp);
-    }
-    console.log(thisMonthData)
-    
+    }    
   }, [receipts]);
 
   const handleCategoryPress = (name: string) => {
@@ -95,12 +123,22 @@ const Home = () => {
       Alert.alert('Error', error?.message || 'Failed to create category.');
     }
   };
+
+  const openReceiptModal = (receipt: Receipt) => {
+    setSelectedReceipt(receipt);
+    setIsEditing(false);
+  };
+
+  const closeModals = () => {
+    setSelectedReceipt(null);
+    setIsEditing(false);
+  };
   
   return (
     <SafeAreaProvider>
-      <SafeAreaView>
+      <SafeAreaView className="bg-primary-10">
         <ScrollView className="p-5">
-          <View className="flex-row justify-between items-center mb-10">
+          <View className="flex-row justify-between items-center mb-7 bg-white px-5 py-7 rounded-3xl shadow-sm">
             <View className="flex-row items-center gap-3">
               <Image source={userPhoto} className="w-14 h-14 rounded-full" resizeMode="contain"/>
               <View>
@@ -112,24 +150,24 @@ const Home = () => {
           </View>
 
           <View className="gap-3 mb-7">
-            <Text className="text-xl  text-text">Quick Actions</Text>
+            <Text className="text-xl font-medium text-text">Quick Actions</Text>
             <View className="flex-row justify-evenly">
               <Pressable onPress={()=> router.push('/scanReceipt')} className="justify-center items-center gap-2">
-                <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200">
+                <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200 shadow-sm">
                   <Ionicons name="camera-outline" size={40} color="white" />
                 </View>
                 <Text className="text-sm text-slate-500">scan</Text>
               </Pressable>
 
               <Pressable onPress={()=> router.push('/importReceipt')} className="justify-center items-center gap-2">
-                <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200">
+                <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200 shadow-sm">
                   <FontAwesome name="photo" size={32} color="white" />
                 </View>
                 <Text className="text-sm text-slate-500">import</Text>
               </Pressable>
 
-              <Pressable onPress={()=> router.push('/addNewReceipt')} className="justify-center items-center gap-2">
-                <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200">
+              <Pressable onPress={()=> router.push('/editReceipt')} className="justify-center items-center gap-2">
+                <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200 shadow-sm">
                   <FontAwesome6 name="pencil" size={30} color="white" />
                 </View>
                 <Text className="text-sm text-slate-500">create</Text>
@@ -155,7 +193,7 @@ const Home = () => {
               showsHorizontalScrollIndicator={false}
               className="mx-1"
             >
-              <View className="mr-4 w-80 rounded-2xl bg-white shadow-lg overflow-hidden p-5 flex-row justify-between">
+              <View className="mr-4 w-80 rounded-2xl bg-white shadow-sm my-2 ml-1 p-5 flex-row justify-between">
                 <View className="w-2/3 gap-1 border-l-2 border-slate-300 pl-4 justify-center">
                   <Text className="text-sm text-gray-500 uppercase tracking-wide">Total Spent</Text>
                   <Text className="text-lg font-bold text-gray-900">€{thisMonthData?.totalSpentThisMonth}</Text>
@@ -169,7 +207,7 @@ const Home = () => {
                   <Ionicons name="wallet-outline" size={56} color="#374151" />
                 </View>
               </View>
-              <View className="mr-4 w-80 rounded-2xl bg-white shadow-lg overflow-hidden p-5 flex-row justify-between">
+              <View className="mr-4 w-80 rounded-2xl bg-white shadow-sm my-2 p-5 flex-row justify-between">
                 <View className="w-2/3 gap-1 border-l-2 border-slate-300 pl-4 justify-center">
                   <Text className="text-sm text-gray-500 uppercase tracking-wide">Biggest Purchase</Text>
                   <Text className="text-lg font-medium text-gray-900">{thisMonthData.mostExpensiveItemThisMonth?.name}</Text>
@@ -183,7 +221,7 @@ const Home = () => {
                   <EvilIcons name="trophy" size={64} color="#4b5563" />
                 </View>
               </View>
-              <View className="w-80 rounded-2xl bg-white shadow-lg overflow-hidden p-5 flex-row justify-between">
+              <View className="w-80 rounded-2xl bg-white shadow-sm my-2 mr-1 p-5 flex-row justify-between">
                 <View className="w-2/3 gap-1 border-l-2 border-slate-300 pl-4 justify-center">
                   <Text className="text-sm text-gray-500 uppercase tracking-wide">Top Spending Category</Text>
                   <Text className="text-lg font-medium text-gray-900">{thisMonthData?.mostSpendingCategoryThisMonth}</Text>
@@ -203,13 +241,16 @@ const Home = () => {
 
           <View className="mb-7 gap-4">
             <Text className="text-xl font-medium text-text">Spending Last 6 Months</Text>
-            {receipts && (<MonthsBarChart receipts={receipts} />)}
+            {receipts && (
+              <View className="rounded-3xl shadow-sm">
+              <MonthsBarChart receipts={receipts} /></View>
+            )}
           </View>
 
           <View className="gap-3 mb-7">
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-xl  text-text">Categories</Text>
-              <Pressable onPress={() => setNewCategoryModalVisible(true)} className="bg-primary-50 rounded-full px-3">
+              <Text className="text-xl font-medium text-text">Categories</Text>
+              <Pressable onPress={() => setNewCategoryModalVisible(true)} className="bg-primary-50 rounded-full px-3 shadow-sm">
                 <Text className="text-primary-200 text-center text-md py-1 font-semibold">
                   add new +
                 </Text>
@@ -221,21 +262,57 @@ const Home = () => {
                     <TouchableOpacity
                       key={index}
                       onPress={() => handleCategoryPress(category)}
-                      className="px-4 py-2 rounded-2xl bg-primary-100 items-center justify-center" 
+                      className="px-4 py-2 rounded-2xl bg-primary-100 items-center shadow-sm justify-center" 
                     >
                       <Text className="text-white  font-semibold">{category}</Text>
                     </TouchableOpacity>
                 ))}
               </View>
             )}
-            <View className="flex-row justify-center">
-              <Pressable onPress={() => router.push('/categories')} className="px-5 py-1  rounded-2xl bg-primary-50 ">
+            <View className="flex-row mt-2 justify-center">
+              <Pressable onPress={() => router.push('/categories')} className="px-5 py-1  rounded-2xl bg-primary-50 shadow-sm">
                 <Text className="text-primary-200 text-center text-lg font-semibold">
                   see more
                 </Text>
               </Pressable>
             </View>
-            
+          </View>
+
+          <View className="mb-7 gap-4">
+            <Text className="text-xl font-medium text-text">Latest Receipts</Text>
+            {receipts.length > 0 ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mx-1">
+                {receipts.slice(0, 4).map((receipt, index) => (
+                  <TouchableOpacity 
+                    key={receipt._id || index} 
+                    onPress={() => openReceiptModal(receipt)}
+                    className="w-80 m-1 bg-white rounded-2xl p-4 shadow-sm justify-center"
+                  >
+                    <ReceiptCard receipt={receipt}/>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity onPress={() => router.push("/history")} className="bg-primary-50 rounded-full px-3 py-5 mx-1 justify-center">
+                  <Text className="text-primary-200 text-center text-sm  font-semibold">LOAD</Text> 
+                  <Text className="text-primary-200 text-center text-sm  font-semibold">MORE</Text> 
+                </TouchableOpacity>
+              </ScrollView>
+            ) : (
+              <Text className="text-md text-gray-600 text-center">No Receipts</Text>
+            )}
+          </View>
+          
+          <View className="mb-7 mt-3 rounded-2xl bg-primary-50 shadow-sm px-5 py-10 flex-row justify-evenly items-center">
+            <View className="w-3/4 items-center gap-1">
+              <Text className="text-lg text-purple-900 font-semibold text-center">
+                Did you know?
+              </Text>
+              <Text className="text-lg text-gray-600 text-center">
+                Tracking your expenses is the first step to financial freedom.
+              </Text>
+            </View>
+            <View className="w-1/4 items-center">
+              <MaterialCommunityIcons name="lightbulb-on-outline" size={52} color="#3b0764" />
+            </View>
           </View>
 
           <NewCategoryModal 
@@ -243,6 +320,13 @@ const Home = () => {
             onClose={() => setNewCategoryModalVisible(false)}
             onCreate={handleCreateCategory}
           />
+
+          {selectedReceipt && !isEditing && (
+            <ReceiptModal
+              receipt={selectedReceipt}
+              onClose={closeModals}
+            />
+          )}
           
         </ScrollView>
       </SafeAreaView>

@@ -185,11 +185,11 @@ const Profile = () => {
 
           <View className="flex-row mt-4 mb-5">
             <View className='w-1/2'>
-            <Pressable onPress={() => setEditingMode(true)} className="mr-1 h-20 justify-center items-center bg-primary-250 rounded-xl">
+            <Pressable onPress={() => setEditingMode(true)} className="mr-1 h-20 justify-center items-center bg-primary-200 rounded-xl">
               <Text className="text-white text-center text-xl font-semibold uppercase">Edit</Text>
             </Pressable></View>
             <View className='w-1/2'>
-            <Pressable onPress={handleLogout} className="ml-1 h-20 justify-center items-center bg-primary-200 rounded-xl">
+            <Pressable onPress={handleLogout} className="ml-1 h-20 justify-center items-center bg-primary-100 rounded-xl">
               <Text className="text-white text-center text-xl font-semibold uppercase">Log Out</Text>
             </Pressable></View>
           </View>
