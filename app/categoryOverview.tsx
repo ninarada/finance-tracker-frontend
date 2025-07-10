@@ -1,6 +1,6 @@
 import ReceiptModal from '@/components/ReceiptModal';
 import { getCategoryItems, getReceiptById } from '@/services/receiptsService';
-import { deleteCategory } from '@/services/userService';
+import { addCategoryToFavourites, deleteCategory, getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,6 +18,8 @@ const CategoryOverview = () => {
   const [sortOption, setSortOption] = useState<'name' | 'totalPrice'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [sortMenuVisible, setSortMenuVisible] = useState(false);
+  const [isFavourited, setIsFavourited] = useState(false);
+  const [favouritesCount, setFavouritesCount] = useState(0);
   
   useEffect(() => {
     const fetchCategoryItems = async () => {
@@ -30,6 +32,11 @@ const CategoryOverview = () => {
           setCategoryItems(data);
           const dataStats = await fetchCategoryStatsByName(token, name);
           setCategoryStats([dataStats]); 
+          const userData = await getMyProfile(token);
+          const isFavourite = userData.favouriteCategories.includes(name);
+          setIsFavourited(isFavourite);
+          const count = userData.favouriteCategories.lenght;
+          setFavouritesCount(count)
         }
       } catch (error) {
         Alert.alert("Error", "Failed to load profile data.");
@@ -105,6 +112,26 @@ const CategoryOverview = () => {
     );
   };
 
+  const handleAddToFavourites = async() => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Unauthorized", "Please sign in first.");
+        return;
+      }
+      const response = await addCategoryToFavourites(token, name, !isFavourited);
+      const isNowFavourited = response.favouriteCategories.includes(name);
+      setIsFavourited(isNowFavourited);
+    } catch (error: any) {
+      const message = error?.message || "Failed to update favourites.";
+      if (message.toLowerCase().includes("favourites limit reached")) {
+        Alert.alert("Limit Reached", "Favourites are full. You can't add more.");
+      } else {
+        Alert.alert("Error", message);
+      }
+    }
+  }
+
   return (
     <SafeAreaProvider>
       <SafeAreaView className='flex-1'>
@@ -116,17 +143,24 @@ const CategoryOverview = () => {
 
                 {categoryStats.length > 0 && (
                   <View className="bg-primary-50 rounded-2xl px-5 pb-4 pt-3 mb-7 mt-3 shadow">
-                    <TouchableOpacity onPress={handleDelete} className='items-end'>
-                      <Text className='text-primary-300 text-sm font-medium'>delete</Text>
-                    </TouchableOpacity>
+                    <View className='flex-row justify-between'>
+                      <TouchableOpacity onPress={handleAddToFavourites}>
+                        <View className='shadow-sm'>
+                          <FontAwesome name={isFavourited ? "star" : "star-o"} size={24} color={isFavourited ? "#FACC15" : "black"} />
+                        </View>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handleDelete} >
+                        <Text className='text-primary-300 text-sm font-medium'>delete</Text>
+                      </TouchableOpacity>
+                    </View>
                     <View className="flex-1 items-center mb-4">
                       <Text className="text-3xl font-bold my-1 text-purple-800">{name}</Text>
                     </View>
                     <View className='gap-2 items-center pb-2'>
                       <Text className="text-md font-medium">Total spent: €{categoryStats[0].totalSpent.toFixed(2)}</Text>
+                      <Text className="text-md font-medium">This months spending: €{categoryStats[0].thisMonthsSpendings.toFixed(2)}</Text>
                       <Text className="text-md font-medium">Most popular store: {categoryStats[0].mostPopularStore || 'N/A'}</Text>
                     </View>
-                    
                 </View>
                 )}
 

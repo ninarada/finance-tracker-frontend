@@ -6,13 +6,14 @@ import { images } from "@/constants/images";
 import { createCategory, getMyReceipts } from "@/services/receiptsService";
 import { AnalysisResult, Receipt } from "@/types/receipt";
 import { analyzeReceiptsThisMonth } from "@/utils/analyzeReceiptsThisMonth";
+import { CategoryStats, fetchCategoryStatsByName } from "@/utils/categoryStats";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getMyProfile } from "../../services/userService";
@@ -26,64 +27,52 @@ const Home = () => {
   const [newCategoryModalVisible, setNewCategoryModalVisible] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-
-  // useEffect(() => {
-  //   const fetchUserProfile = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem("token");
-  //       if (!token) {
-  //         router.replace("/sign-in");
-  //         setUser(null);
-  //       } else {
-  //         const profile = await getMyProfile(token);
-  //         setUser(profile);
-  //         if (profile.photo !== "/public/images/profile-picture.png") {
-  //           setUserPhoto({ uri: profile.photo }); 
-  //         }
-  //         const data = await getMyReceipts(token);
-  //         setReceipts(data);
-  //       }
-  //     } catch (error) {
-  //       Alert.alert("Error", "Failed to load profile data.");
-  //     }
-  //   };
-
-  //   fetchUserProfile();
-  // }, []);
-
-  const fetchUserProfileAndReceipts = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        router.replace("/sign-in");
-        setUser(null);
-        return;
-      }
-      const profile = await getMyProfile(token);
-      setUser(profile);
-      if (profile.photo !== "/public/images/profile-picture.png") {
-        setUserPhoto({ uri: profile.photo });
-      }
-      const data = await getMyReceipts(token);
-      setReceipts(data);
-    } catch (error) {
-      Alert.alert("Error", "Failed to load profile data.");
-    }
-  };
+  const [favStats, setFavStats] = useState<{[key: string]: CategoryStats}>({});
 
   useFocusEffect(
     useCallback(() => {
-      fetchUserProfileAndReceipts();
+      const fetchAll = async () => {
+        try {
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            router.replace("/sign-in");
+            setUser(null);
+            return;
+          }
+  
+          const profile = await getMyProfile(token);
+          setUser(profile);
+          if (profile.photo !== "/public/images/profile-picture.png") {
+            setUserPhoto({ uri: profile.photo });
+          }
+  
+          const data = await getMyReceipts(token);
+          setReceipts(data);
+          const analysis = analyzeReceiptsThisMonth(data);
+          setThisMonthData(analysis);
+  
+          if (profile.favouriteCategories?.length > 0) {
+            const statsArray = await Promise.all(
+              profile.favouriteCategories.map(async (category: string) => {
+                const stats = await fetchCategoryStatsByName(token, category);
+                return { category, stats };
+              })
+            );
+            const statsObject = statsArray.reduce((acc, { category, stats }) => {
+              acc[category] = stats;
+              return acc;
+            }, {});
+            setFavStats(statsObject);
+          }
+  
+        } catch (error) {
+          Alert.alert("Error", "Failed to load profile data.");
+        }
+      };
+      fetchAll();
     }, [])
   );
-
-  useEffect(() => {
-    if(receipts) {
-      const temp = analyzeReceiptsThisMonth(receipts);
-      setThisMonthData(temp);
-    }    
-  }, [receipts]);
-
+  
   const handleCategoryPress = (name: string) => {
     router.push({
       pathname: "/categoryOverview",
@@ -137,7 +126,8 @@ const Home = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView className="bg-primary-10">
-        <ScrollView className="p-5">
+        {user && ( <ScrollView className="p-5">
+   
           <View className="flex-row justify-between items-center mb-7 bg-white px-5 py-7 rounded-3xl shadow-sm">
             <View className="flex-row items-center gap-3">
               <Image source={userPhoto} className="w-14 h-14 rounded-full" resizeMode="contain"/>
@@ -300,8 +290,34 @@ const Home = () => {
               <Text className="text-md text-gray-600 text-center">No Receipts</Text>
             )}
           </View>
+
+          <View className="mb-10 gap-4">
+            <View className="flex-row gap-2 items-baseline">
+              <Text className="text-xl font-medium text-text">Favourite Categories</Text>
+              <FontAwesome name={"star-o"} size={16} color={"grey"} />
+            </View>
+            
+            <View>
+              {user.favouriteCategories.map((category: string, index: React.Key | null | undefined) => {
+                const dataStats = favStats[category];
+                if (!dataStats) return <Text key={index}>Loading...</Text>;
+                return (
+                  <View key={index} className="bg-primary-50 rounded-2xl px-5 py-5 my-2 shadow-sm">
+                    <TouchableOpacity onPress={() => router.push({ pathname: '/categoryOverview', params: { name: category } })}>
+                      <Text className="text-2xl text-center font-bold mb-2 text-purple-800">{category}</Text>
+                      <View className="gap-2 items-center">
+                        <Text className="text-md font-medium">Total spent: €{dataStats.totalSpent.toFixed(2)}</Text>
+                        <Text className="text-md font-medium">This months spending: €{dataStats.thisMonthsSpendings.toFixed(2)}</Text>
+                        <Text className="text-md font-medium">Most popular store: {dataStats.mostPopularStore || 'N/A'}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
           
-          <View className="mb-7 mt-3 rounded-2xl bg-primary-50 shadow-sm px-5 py-10 flex-row justify-evenly items-center">
+          <View className="mb-7 mt-3 rounded-2xl bg-white shadow-sm px-5 py-10 flex-row justify-evenly items-center">
             <View className="w-3/4 items-center gap-1">
               <Text className="text-lg text-purple-900 font-semibold text-center">
                 Did you know?
@@ -328,7 +344,7 @@ const Home = () => {
             />
           )}
           
-        </ScrollView>
+        </ScrollView>)}
       </SafeAreaView>
     </SafeAreaProvider>
   )

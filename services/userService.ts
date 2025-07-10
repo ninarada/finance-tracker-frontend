@@ -88,3 +88,20 @@ export const deleteCategory = async (token: string, name:  string) => {
       throw new Error(message);
   }
 }
+
+export const addCategoryToFavourites = async (token: string, categoryName: string, add: boolean) => {
+  try {
+    const response = await apiClient.post('/api/users/addCategoryToFavourites',
+      { categoryName, add },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Error adding favourite category.";
+    throw new Error(message);
+  }
+};
