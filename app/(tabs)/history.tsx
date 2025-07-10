@@ -147,10 +147,10 @@ const History = () => {
 
     return (
         <SafeAreaProvider>
-        <SafeAreaView className='flex-1'>
-            <ScrollView className="px-5">
-            <View className="flex-1 items-center">
-                <Text className="text-2xl font-bold my-5">History</Text>
+        <SafeAreaView className='flex-1 bg-primary-10'>
+        <ScrollView className="px-5">
+            <View className="bg-primary-50 rounded-xl shadow-sm mb-5">
+                <Text className="text-2xl text-center font-bold my-5 text-purple-900 uppercase">History</Text>
             </View>
 
             <View className="flex-row items-center justify-between mb-1">

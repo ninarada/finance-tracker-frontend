@@ -65,10 +65,10 @@ const Analytics = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className='flex-1'>
+      <SafeAreaView className='flex-1 bg-primary-10'>
         <ScrollView className="px-5" >
-          <View className="flex-1 items-center">
-            <Text className="text-2xl font-bold my-5 text-purple-950">Analytics</Text>
+          <View className="bg-primary-50 rounded-xl shadow-sm mb-5">
+            <Text className="text-2xl text-center font-bold my-5 text-purple-900 uppercase">Analytics</Text>
           </View>
 
           {receipts.length > 0 && (

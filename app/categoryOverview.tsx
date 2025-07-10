@@ -134,7 +134,7 @@ const CategoryOverview = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className='flex-1'>
+      <SafeAreaView className='flex-1 bg-primary-10'>
             <ScrollView className="px-5">
                 <Pressable onPress={() => router.back()} className="flex-row items-center gap-2">
                     <FontAwesome size={15} name="arrow-left" color="#64748b"/>

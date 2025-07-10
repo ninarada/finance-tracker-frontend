@@ -100,7 +100,7 @@ const Profile = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView>
+      <SafeAreaView className="bg-primary-10">
         <ScrollView className="min-h-full p-2">
           <View className="relative h-65 pb-5 mx-2 justify-center items-center">
             <View className="absolute inset-0">

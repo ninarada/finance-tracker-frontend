@@ -8,7 +8,7 @@ const ScanReceipt = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="h-full pb-7 items-center justify-center">
+      <SafeAreaView className="h-full pb-7 items-center justify-center bg-primary-10">
           <View className="items-center">
             <Text className="text-2xl font-bold my-5 text-slate-700 ita">Scan Receipts</Text>
           </View>
