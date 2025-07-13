@@ -136,7 +136,9 @@ const Home = () => {
                 <Text className="text-xl font-bold text-text">{user?.name ? `${user.name}` : ""}!</Text>
               </View>
             </View>
-            <FontAwesome size={28} name="bell-o" color="#64748B"/>
+            <TouchableOpacity onPress={()=> router.push('/inbox')}>
+              <FontAwesome size={28} name="bell-o" color="#64748B"/> 
+            </TouchableOpacity>
           </View>
 
           <View className="gap-3 mb-7">

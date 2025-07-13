@@ -1,7 +1,9 @@
+import DottedLine from '@/assets/svg/dottedLine';
 import ReceiptModal from '@/components/ReceiptModal';
 import { getCategoryItems, getReceiptById } from '@/services/receiptsService';
 import { addCategoryToFavourites, deleteCategory, getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
+import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -142,7 +144,7 @@ const CategoryOverview = () => {
                 </Pressable>
 
                 {categoryStats.length > 0 && (
-                  <View className="bg-primary-50 rounded-2xl px-5 pb-4 pt-3 mb-7 mt-3 shadow">
+                  <View className="bg-primary-50 rounded-2xl px-5 pb-4 pt-3 mb-7 mt-3 shadow-sm">
                     <View className='flex-row justify-between'>
                       <TouchableOpacity onPress={handleAddToFavourites}>
                         <View className='shadow-sm'>
@@ -156,28 +158,47 @@ const CategoryOverview = () => {
                     <View className="flex-1 items-center mb-4">
                       <Text className="text-3xl font-bold my-1 text-purple-800">{name}</Text>
                     </View>
-                    <View className='gap-2 items-center pb-2'>
-                      <Text className="text-md font-medium">Total spent: €{categoryStats[0].totalSpent.toFixed(2)}</Text>
-                      <Text className="text-md font-medium">This months spending: €{categoryStats[0].thisMonthsSpendings.toFixed(2)}</Text>
-                      <Text className="text-md font-medium">Most popular store: {categoryStats[0].mostPopularStore || 'N/A'}</Text>
+                    <View className='flex-row items-center p-2 gap-1'>
+                      <View className='w-8 items-center'>
+                        <FontAwesome5 name="money-bill-alt" size={16} color="#374151" />
+                      </View>
+                      <Text className="text-md font-medium">total spent</Text>
+                      <View className="flex-1 mx-2 justify-end pb-1"><DottedLine /></View>
+                      <Text className="text-md font-medium">€{categoryStats[0].totalSpent.toFixed(2)}</Text>
+                    </View>
+                    <View className='flex-row items-center p-2 gap-1'>
+                      <View className='w-8 items-center'>
+                        <FontAwesome name="shopping-cart" size={16} color="#374151" />
+                      </View>
+                      <Text className="text-md font-medium">this months spendings</Text>
+                      <View className="flex-1 mx-2 justify-end pb-1"><DottedLine /></View>
+                      <Text className="text-md font-medium">€{categoryStats[0].thisMonthsSpendings.toFixed(2)}</Text>
+                    </View>
+                    <View className='flex-row items-center p-2 gap-1'>
+                      <View className='w-8 items-center'>
+                        <Entypo name="shop" size={16} color="#374151" />
+                      </View>
+                      <Text className="text-md font-medium">most popular store</Text>
+                      <View className="flex-1 mx-2 justify-end pb-1"><DottedLine /></View>
+                      <Text className="text-md font-medium">{categoryStats[0].mostPopularStore || 'N/A'}</Text>
                     </View>
                 </View>
                 )}
 
                 {categoryItems.length >0 && (<View className="flex-row mb-3">
-                  <TouchableOpacity
-                    onPress={() => setSortMenuVisible(true)}
-                    className="bg-primary-200 px-6 py-1 rounded-full"
-                  >
-                    <Text className="text-white text-md font-semibold text-center" >Sort</Text>
-                  </TouchableOpacity>
+                  <View className='bg-primary-200 px-6 py-1 rounded-full shadow-sm'>
+                    <TouchableOpacity onPress={() => setSortMenuVisible(true)}>
+                      <Text className="text-white text-md font-bold text-center" >Sort</Text>
+                    </TouchableOpacity>  
+                  </View>
+                  
                 </View>)}
 
                 {categoryItems.length === 0 ? (
                     <Text className="text-center text-gray-500">No items found in this category.</Text>
                 ) : (
                   sortedCategoryItems.map((item, index) => (
-                    <View key={index} className="bg-white rounded-2xl p-4 mb-5 shadow">
+                    <View key={index} className="bg-white rounded-2xl p-4 mb-5 shadow-sm">
                         <View className='flex-row justify-between'>
                             <Text className="font-bold text-lg text-purple-950">{item.name}</Text>
                             <Text className="text-md text-gray-700">

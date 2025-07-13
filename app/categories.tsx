@@ -1,7 +1,9 @@
+import DottedLine from '@/assets/svg/dottedLine';
 import NewCategoryModal from '@/components/newCategoryModal';
 import { createCategory } from '@/services/receiptsService';
 import { getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
+import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -132,27 +134,25 @@ const AllCategories = () => {
         <SafeAreaView className="flex-1 bg-primary-10">
             <ScrollView className="p-4">
                 <Pressable onPress={() => router.back()} className="flex-row items-center gap-2 mb-2">
-                    <FontAwesome size={20} name="arrow-left" color="#64748b" />
-                    <Text className="text-slate-500 font-medium text-xl">Back</Text>
+                    <FontAwesome size={16} name="arrow-left" color="#64748b" />
+                    <Text className="text-slate-500 font-medium text-lg">back</Text>
                 </Pressable>
 
-                <View className="flex-1 items-center">
-                    <Text className="text-2xl font-bold mb-3 text-purple-900">Categories</Text>
+                <View className="bg-primary-50 rounded-xl shadow-sm mb-3">
+                    <Text className="text-2xl text-center font-bold my-5 text-purple-900 uppercase">Categories</Text>
                 </View>
 
                 <View className='flex-row mt-2 mb-4 justify-between'>
-                    <TouchableOpacity
-                        onPress={openSortMenu}
-                        className="bg-primary-200 px-10 py-2 rounded-full"
-                    >
-                        <Text className="text-white font-semibold text-center">Sort</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => setNewCategoryModalVisible(true)}
-                        className="bg-primary-50 px-10 py-2 rounded-full"
-                    >
-                        <Text className="text-primary-250 font-semibold text-center">Add New +</Text>
-                    </TouchableOpacity>
+                    <View className='shadow-sm bg-primary-200 px-10 py-2 rounded-full'>
+                        <TouchableOpacity onPress={openSortMenu}>
+                            <Text className="text-white font-bold text-center shadow">Sort</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View className='shadow-sm bg-primary-100 px-7 py-2 rounded-full'>
+                        <TouchableOpacity onPress={() => setNewCategoryModalVisible(true)}>
+                            <Text className="text-white shadow font-bold text-center">Add New +</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 
                 {loading ? (
@@ -164,16 +164,38 @@ const AllCategories = () => {
                         <Text className="text-gray-500">No categories available.</Text>
                     </View>
                 ) : (
-                    <View className="flex-col gap-4">
+                    <View className="flex-col gap-3">
                         {sortedCategoryStats.map(({ name, totalSpent, mostPopularStore }) => (
                             <TouchableOpacity
                                 key={name}
                                 onPress={() => handleCategoryPress(name)}
-                                className="bg-white rounded-2xl p-4 mb-5 shadow"
+                                className="bg-white rounded-2xl p-4 shadow-sm"
                             >
-                                <Text className="text-slate-700 font-bold text-lg mb-1">{name}</Text>
-                                <Text className="text-sm text-gray-700">Total spent: €{totalSpent.toFixed(2)}</Text>
-                                <Text className="text-sm text-gray-700">Most popular store: {mostPopularStore || 'N/A'}</Text>
+                                <Text className="text-primary-700 font-bold text-lg mb-1">{name}</Text>
+                                <View className='flex-row items-center p-2 gap-1'>
+                                    <View className='w-8 items-center'>
+                                        <FontAwesome5 name="money-bill-alt" size={16} color="#374151" />
+                                    </View>
+                                    <Text className="text-sm text-gray-700">total spent</Text>
+                                    <View className="flex-1 mx-2 justify-end pb-1"><DottedLine /></View>
+                                    <Text className="text-sm text-gray-700 ">€{totalSpent.toFixed(2)}</Text>
+                                </View>
+                                <View className='flex-row items-center p-2 gap-1'>
+                                    <View className='w-8 items-center'>
+                                        <FontAwesome name="shopping-cart" size={16} color="#374151" />
+                                    </View>
+                                    <Text className="text-sm text-gray-700">this months spendings</Text>
+                                    <View className="flex-1 mx-2 justify-end pb-1"><DottedLine /></View>
+                                    <Text className="text-sm text-gray-700 ">€{categoryStats[0].thisMonthsSpendings.toFixed(2)}</Text>
+                                </View>
+                                <View className='flex-row items-center p-2 gap-1'>
+                                    <View className='w-8 items-center'>
+                                        <Entypo name="shop" size={16} color="#374151" />
+                                    </View>
+                                    <Text className="text-sm text-gray-700">most popular store</Text>
+                                    <View className="flex-1 mx-2 justify-end pb-1"><DottedLine /></View>
+                                    <Text className="text-sm text-gray-700 ">{mostPopularStore || 'N/A'}</Text>
+                                </View>
                             </TouchableOpacity>
                         ))}
                     </View>

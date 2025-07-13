@@ -31,30 +31,24 @@ const slides = [
 ];
 
 export default function Onboarding() {
+  
   const renderItem = ({ item }: { item: typeof slides[number] }) => (
     <View className="flex-1 items-center justify-center px-6">
-      <Text className="text-4xl font-bold text-center text-white pb-10">
+      <Text className="text-4xl font-bold text-center text-white pb-10 shadow">
         {item.title}
       </Text>
-      <Image source={item.image} className="w-64 h-64 mb-6" resizeMode="contain" />
-      <Text className="px-6 text-xl font-semibold text-gray-100 text-center">
+      <Image source={item.image} className="w-64 h-64 mb-6 shadow" resizeMode="contain" />
+      <Text className="px-6 text-xl font-semibold text-gray-100 text-center shadow-sm">
         {item.text}
       </Text>
     </View>
   );
-
-  const onDone = () => {
-    // TODO: Navigate to your Home/Login screen
-    console.log("Onboarding complete!");
-  };
 
   return (
     <View className="h-full  bg-primary-200 ">
       <AppIntroSlider
         data={slides}
         renderItem={renderItem}
-        onDone={onDone}
-        onSkip={onDone}
         showNextButton={false}
         showDoneButton={false}
         bottomButton={false}
