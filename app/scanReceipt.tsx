@@ -290,7 +290,7 @@ const ScanNewReceipt = () => {
                                 {receipt?.note && (
                                     <Text className="text-xs text-gray-400 italic mb-2">Note: {receipt.note}</Text>
                                 )}
-                                {receipt?.tags?.length > 0 && (
+                                {receipt?.tags?.length && receipt?.tags?.length > 0 && (
                                     <Text className="text-xs text-gray-500 mb-2">
                                         Tags: {receipt.tags.join(", ")}
                                     </Text>

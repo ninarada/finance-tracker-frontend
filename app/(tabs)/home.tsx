@@ -41,6 +41,7 @@ const Home = () => {
           }
   
           const profile = await getMyProfile(token);
+          console.log(profile);
           setUser(profile);
           if (profile.photo !== "/public/images/profile-picture.png") {
             setUserPhoto({ uri: profile.photo });
@@ -66,7 +67,9 @@ const Home = () => {
           }
   
         } catch (error) {
-          Alert.alert("Error", "Failed to load profile data.");
+          // Alert.alert("Error", "Failed to load profile data.");
+          await AsyncStorage.removeItem("token");
+          router.replace("/onboarding");
         }
       };
       fetchAll();
@@ -289,7 +292,7 @@ const Home = () => {
                 </TouchableOpacity>
               </ScrollView>
             ) : (
-              <Text className="text-md text-gray-600 text-center">No Receipts</Text>
+              <Text className="text-md text-gray-600 text-center">No Receipts Available</Text>
             )}
           </View>
 
@@ -298,8 +301,10 @@ const Home = () => {
               <Text className="text-xl font-medium text-text">Favourite Categories</Text>
               <FontAwesome name={"star-o"} size={16} color={"grey"} />
             </View>
-            
-            <View>
+            {user.favouriteCategories.length < 1 ? (
+              <Text className="text-md text-gray-600 text-center">You haven't selected any favorite categories yet.</Text>
+            ) : (
+              <View>
               {user.favouriteCategories.map((category: string, index: React.Key | null | undefined) => {
                 const dataStats = favStats[category];
                 if (!dataStats) return <Text key={index}>Loading...</Text>;
@@ -317,6 +322,7 @@ const Home = () => {
                 );
               })}
             </View>
+            )}
           </View>
           
           <View className="mb-7 mt-3 rounded-2xl bg-white shadow-sm px-5 py-10 flex-row justify-evenly items-center">

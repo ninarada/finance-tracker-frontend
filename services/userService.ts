@@ -2,12 +2,14 @@ import mime from "mime";
 import { UpdatedProfileData, User } from "../types/user";
 import apiClient from "./apiClient";
 
-export const registerUser = async (username: string, email: string, password: string): Promise<User> => {
+export const registerUser = async (username: string, email: string, password: string, name: string, surname: string): Promise<User> => {
   try {
     const response = await apiClient.post('/api/users/register', {
       username,
       email,
       password,
+      name,
+      surname,
     });
     return response.data;
   } catch (error: any) {

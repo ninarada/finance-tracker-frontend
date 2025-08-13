@@ -1,3 +1,4 @@
+import { images } from "@/constants/images";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from 'expo-image-picker';
@@ -9,9 +10,12 @@ import { getMyProfile, getUserStats, updateProfile } from "../../services/userSe
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
+  const [userPhoto, setUserPhoto] = useState<any>(images.profile_picture);
   const [stats, setStats] = useState<any>(null);
   const [editingMode, setEditingMode] = useState(false);
   const [editUser, setEditUser] = useState<any>(null);
+  const [editUserPhoto, setEditUserPhoto] = useState<any>(images.profile_picture);
+
 
   const router = useRouter();
 
@@ -26,6 +30,10 @@ const Profile = () => {
           const profile = await getMyProfile(token);
           const statsData = await getUserStats(token);
           setUser(profile);
+          if (profile.photo !== "/public/images/profile-picture.png") {
+            setUserPhoto({ uri: profile.photo });
+            setEditUserPhoto({ uri: profile.photo });
+          }
           setEditUser(profile);
           setStats(statsData);
         }
@@ -64,6 +72,7 @@ const Profile = () => {
           type: selectedImage.type || "image/jpeg",
         },
       });
+      setEditUserPhoto(selectedImage.uri);
     }
   };  
 
@@ -101,6 +110,7 @@ const Profile = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView className="bg-primary-10">
+       {user && ( 
         <ScrollView className="min-h-full p-2">
           <View className="relative h-65 pb-5 mx-2 justify-center items-center">
             <View className="absolute inset-0">
@@ -117,10 +127,7 @@ const Profile = () => {
             </Pressable>
             <View className="items-center z-1 gap-2">
               <View className='shadow-sm'>
-                 <Image
-                source={{ uri: user?.photo }}
-                className="w-32 h-32 rounded-full border-2 border-white mb-1 mt-12"
-              />
+                  <Image source={userPhoto} className="w-32 h-32 rounded-full border-2 border-white mb-1 mt-12" />
               </View>
              
               <Text className="text-xl font-semibold">{user?.name || "Loading..."} {user?.surname || "Loading..."}</Text>
@@ -190,7 +197,7 @@ const Profile = () => {
                     </TouchableOpacity>
                 );
               }) : (
-                <Text>No categories.</Text> 
+                <Text className="text-slate-600">You don’t have any top categories yet.</Text> 
               )}
             </View>
           </View>
@@ -215,10 +222,11 @@ const Profile = () => {
             <View className="flex-1 justify-center items-center bg-black/70 px-5">
               <View className="bg-white w-full rounded-2xl p-5 gap-1">
               <Pressable onPress={pickImage} className="items-center mb-3">
-                <Image
+                {/* <Image
                   source={{ uri: editUser?.photo || user?.photo }}
                   className="w-24 h-24 rounded-full border-2 border-gray-300"
-                />
+                /> */}
+                <Image source={editUserPhoto} className="w-32 h-32 rounded-full border-2 border-white mb-1 mt-12" />
                 <Text className="text-primary-250 mt-1">Change Photo</Text>
               </Pressable>
                 <Text className="text-text-light text-md">Name</Text>
@@ -278,7 +286,8 @@ const Profile = () => {
             </View>
           </Modal>
 
-        </ScrollView>
+        </ScrollView> 
+      )}
       </SafeAreaView>
     </SafeAreaProvider>
     
