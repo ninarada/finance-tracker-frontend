@@ -128,3 +128,39 @@ export const addCategoryToFavourites = async (token: string, categoryName: strin
     throw new Error(message);
   }
 };
+
+// DODAJ U WORD
+
+export const deleteUser = async (token: string, password: string): Promise<User> => {
+  try {
+    const response = await apiClient.delete('/api/users/deleteUser', {
+      params: { password },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data;
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Error deleting account.";
+    throw new Error(message);
+  }
+};
+
+//PUT /api/users/changePassword
+export const changePassword = async (token: string, currentPassword: string, newPassword: string): Promise<User> => {
+  try {
+    const response = await apiClient.put('/api/users/changePassword', {
+      currentPassword,
+      newPassword,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Error changing password.";
+    throw new Error(message);
+  }
+};

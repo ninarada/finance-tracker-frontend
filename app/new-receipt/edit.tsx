@@ -1,11 +1,11 @@
-import AddToCategoryModal from '@/components/AddToCategoryModal';
-import { createReceipt, getReceiptById, updateReceipt } from '@/services/receiptsService';
-import { CreateReceipt, PaymentMethod, Receipt, ReceiptItem } from '@/types/receipt';
+import AddToCategoryModal from '@/components/modals/AddToCategoryModal';
+import { createReceipt, updateReceipt } from '@/services/receiptsService';
+import { CreateReceipt, PaymentMethod, ReceiptItem } from '@/types/receipt';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,15 +18,8 @@ const itemInitial: ReceiptItem = {
     totalPrice: 0,
     categories: [],
 }
-  
-const receiptInitial: CreateReceipt  = {
-    items: [],
-    note: "",
-    paymentMethod: undefined,
-    tags: [],
-    store: "",
-    date: "",
-}
+
+const isPaymentMethod = (v: unknown): v is PaymentMethod => paymentMethods.includes(v as PaymentMethod);
 
 const ItemListHeader = () => (
     <View className="flex-row pt-1 px-4 border-b border-gray-200 pb-1 mb-1 justify-center items-center">
@@ -38,21 +31,21 @@ const ItemListHeader = () => (
     </View>
 );
 
+//mode : new, existing, update
 const EditReceipt = () => {
-    const params = useLocalSearchParams();
-    const receiptId = params.receiptId as string | undefined;
     const router = useRouter();
+    const { data, mode, receiptId } = useLocalSearchParams();
+    const parsedData = JSON.parse(data as string);
 
-    const [receipt, setReceipt] = useState<Receipt>();
-    const [store, setStore] = useState(receipt?.store);
-    const [date, setDate] = useState(receipt?.date ? new Date(receipt.date) : undefined);
-    const [createdAt, setCreatedAt] = useState(receipt?.createdAt ? new Date(receipt.createdAt) : undefined);
-    const [updatedAt, setUpdatedAt] = useState(receipt?.updatedAt ? new Date(receipt.updatedAt) : undefined);
-    const [totalAmount, setTotalAmount] = useState(receipt?.totalAmount);
-    const [items, setItems] = useState(receipt?.items);
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | undefined>(receipt?.paymentMethod);
-    const [note, setNote] = useState(receipt?.note);
-    const [tags, setTags] = useState(receipt?.tags);
+    const [store, setStore] = useState(parsedData.store);
+    const [date, setDate] = useState(parsedData.date ? new Date(parsedData.date) : undefined);
+    const [createdAt, setCreatedAt] = useState(mode==='existing' ? new Date(parsedData.createdAt) : undefined);
+    const [updatedAt, setUpdatedAt] = useState(mode==='existing' ? new Date(parsedData.updatedAt) : undefined);
+    const [totalAmount, setTotalAmount] = useState(parsedData.totalAmount);
+    const [items, setItems] = useState(parsedData.items);
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(isPaymentMethod(parsedData.paymentMethod) ? parsedData.paymentMethod : "Other");
+    const [note, setNote] = useState(parsedData.note);
+    const [tags, setTags] = useState(parsedData.tags);
     
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [itemCategories, setItemCategories] = useState<{ [key: number]: string[] }>({});
@@ -63,98 +56,36 @@ const EditReceipt = () => {
     const [newItem, setNewItem] = useState<ReceiptItem>(itemInitial);
     const [unitPriceInput, setUnitPriceInput] = useState<string>("");
 
-
-    useEffect(() => {
-        const fetchReceipt = async () => {
-          try {
-            const token = await AsyncStorage.getItem("token");
-            if (!token) {
-              router.replace("/sign-in");
-            } else {
-                if(receiptId !== undefined) {
-                    const data = await getReceiptById(token, receiptId);
-                    setReceipt(data);
-                }
-            }
-          } catch (error) {
-            Alert.alert("Error", "Failed to load profile data.");
-          }
-        };
-        
-        fetchReceipt();
-    }, []);
-
-    useEffect(() => {
-        if (receipt) {
-            setStore(receipt.store);
-            setDate(new Date(receipt.date));
-            setCreatedAt(new Date (receipt.createdAt));
-            setUpdatedAt(new Date (receipt.updatedAt));
-            setTotalAmount(receipt.totalAmount);
-            setItems(receipt.items);
-            setPaymentMethod(receipt.paymentMethod);
-            setNote(receipt.note);
-            setTags(receipt.tags);
-        }
-    }, [receipt]);
-
     const handleSave = async () => {
-        if (!store){
+        if (store===""){
             Alert.alert("Validation", "Store name cannot be empty.");
             return;
         }
+        //napravi provjeru za ostala polja
 
-        if (!date){
-            Alert.alert("Validation", "Store name cannot be empty.");
-            return;
-        }
-
-        if (!store){
-            Alert.alert("Validation", "Store name cannot be empty.");
-            return;
-        }
-
-        if (store && !store.trim()) {
-            Alert.alert("Validation", "Store name cannot be empty.");
-            return;
-        }
-        if (!paymentMethod) {
-            Alert.alert("Validation", "Please select a payment method.");
-            return;
-        }
-
-        const updatedReceipt: Receipt = {
-            ...receipt!,
+        const receiptData: CreateReceipt = {
             store: store.trim(),
-            date: new Date(date).toISOString(),
-            paymentMethod,
+            date: date,
+            items: items ? items : [],
+            totalAmount: totalAmount,
+            paymentMethod: paymentMethod,
             note: note ? note : "",
             tags: tags ? tags : [],
-        };
-
-        const createReceiptData: CreateReceipt = {
-            store: store.trim(),
-            date: new Date(date).toISOString(),
-            paymentMethod: paymentMethod,
-            items: items ? items : [],
-            note: note ? note : "",
-            tags: [],
         }
-
-        console.log(createReceiptData); 
 
         try {
             const token = await AsyncStorage.getItem("token");
             if (!token) return;
-            if(updatedAt) {
-                const updatedData = await updateReceipt(token, updatedReceipt._id, updatedReceipt);
+            if(mode==="update") {
+                const updatedData = await updateReceipt(token, JSON.parse(receiptId as string), receiptData);
                 Alert.alert("Success", "Receipt updated successfully.");
                 router.push({
                     pathname: "/history",
                     params: { receiptId },
                 });
             } else {
-                const createData = await createReceipt(token, createReceiptData);
+                const createData = await createReceipt(token, receiptData);
+                //console.log('edit.tsx - createData: ' + createData);
                 Alert.alert("Success", "Receipt created successfully.");
                 router.push({
                     pathname: "/history",
@@ -183,6 +114,24 @@ const EditReceipt = () => {
         );
     }
 
+    const handlePreview = () => {
+        const receiptData: CreateReceipt = {
+            store: store.trim(),
+            date: date,
+            items: items ? items : [],
+            totalAmount: totalAmount,
+            paymentMethod: paymentMethod,
+            note: note ? note : "",
+            tags: tags ? tags : [],
+        }
+        router.push({
+            pathname: "/new-receipt/preview",
+            params: {
+              data: JSON.stringify(receiptData), 
+            },
+        });
+    }
+
     const onChangeDate = (event: any, selectedDate?: Date) => {
         setShowDatePicker(false); 
         if (selectedDate) {
@@ -197,13 +146,14 @@ const EditReceipt = () => {
 
     const ItemList = () => (
         <View>
-            {items && items.map((item, i) => (
+            {items && items.map((item: any, i:any) => (
                 <View key={i} className="py-2 ">
                     <View className="flex-row pt-1 px-4 justify-center items-center pb-2">                                    
                         <Text className="w-1/3 text-gray-700">{item.name}</Text>
                         <Text className="w-3/12 text-right text-gray-700 pr-2">{`€${item.unitPrice?.toFixed(2)}`}</Text>
                         <Text className="w-2/12 text-right text-gray-700 pr-2">{item.quantity}</Text>
-                        <Text className="w-3/12 text-right text-gray-700 pr-2">{`€${item.totalPrice?.toFixed(2)}`}</Text>
+                        <Text className="w-3/12 text-right text-gray-700 pr-2">{`€${(parseFloat(String(item.totalPrice ?? 0).replace(',', '.')) || 0).toFixed(2)}`}
+                        </Text>
                         <Pressable onPress={() => handleDeleteItem(i)} className="w-1/12">
                             <FontAwesome name="close" size={18} color="#6b7280" />
                         </Pressable>
@@ -256,8 +206,8 @@ const EditReceipt = () => {
       };
     
     const handleDeleteItem = (index: number) => {
-        const updatedItems = items?.filter((_, i) => i !== index);
-        const updatedTotalAmount = updatedItems?.reduce((sum, item) => sum + item.totalPrice, 0);
+        const updatedItems = items?.filter((_:any, i:any) => i !== index);
+        const updatedTotalAmount = updatedItems?.reduce((sum:any, item:any) => sum + item.totalPrice, 0);
     
         setItems(updatedItems);
         setTotalAmount(updatedTotalAmount);
@@ -271,8 +221,7 @@ const EditReceipt = () => {
                         <FontAwesome size={15} name="arrow-left" color="#64748b"/>
                         <Text className="text-slate-500 font-medium text-xl">back</Text>
                     </Pressable>
-
-                    {receipt ? (
+                    {mode==="existing" ? (
                         <View>
                             <Text className="text-2xl mt-3 font-bold mb-2 text-center">Edit Receipt</Text>
                             <View className='items-center mb-6'>
@@ -280,11 +229,9 @@ const EditReceipt = () => {
                                 <Text className='text-slate-600 text-sm italic'>Last updated: {updatedAt ? updatedAt?.toLocaleDateString() : ''}</Text>
                             </View>
                         </View>
-                        
                     ) : (
                         <Text className="text-2xl mt-3 font-bold mb-4 text-center">New Receipt</Text>
                     )}
-
                     {/* Store Name */}
                     <Text className="font-semibold mb-2">Store</Text>
                     <TextInput
@@ -335,7 +282,7 @@ const EditReceipt = () => {
                     {/* Total Amount */}
                     <Text className="font-semibold mb-2">Total Amount</Text>
                     <Text className="mb-4 border border-gray-300 rounded-lg p-2 bg-gray-200 text-gray-700">
-                        € {(totalAmount ?? 0).toFixed(2)}
+                        € {(((+String(totalAmount ?? 0).replace(',', '.')) || 0)).toFixed(2)}
                     </Text>
 
                     {/* Tags */}
@@ -347,7 +294,7 @@ const EditReceipt = () => {
                             value={tagInput}
                             onChangeText={setTagInput}
                             onSubmitEditing={() => {
-                                const normalizedTags = tags?.map(tag => tag.toLowerCase().trim());
+                                const normalizedTags = tags?.map((tag:any) => tag.toLowerCase().trim());
                                 const normalizedInput = tagInput.trim().toLowerCase();
 
                                 if (tagInput.trim() && !normalizedTags?.includes(normalizedInput)) {
@@ -357,7 +304,7 @@ const EditReceipt = () => {
                             }}
                         />
                         <Pressable className="bg-indigo-300 px-4 py-2 rounded-lg" onPress={() => {
-                            const normalizedTags = tags?.map(tag => tag.toLowerCase().trim());
+                            const normalizedTags = tags?.map((tag:any) => tag.toLowerCase().trim());
                             const normalizedInput = tagInput.trim().toLowerCase();
 
                             if (tagInput.trim() && !normalizedTags?.includes(normalizedInput)) {
@@ -370,10 +317,10 @@ const EditReceipt = () => {
                     </View>
                     {tags && (
                         <View className="mb-3 flex-row flex-wrap gap-2">
-                            {tags.map((tag, index) => (
+                            {tags.map((tag:any, index:any) => (
                                 <View key={index} className="bg-primary-50 px-3 py-1 rounded-full flex-row items-center" >
                                     <Text className="mr-2 text-sm text-gray-700">{tag}</Text>
-                                    <Pressable onPress={() => { setTags(tags!.filter((_, i) => i !== index),); }}>
+                                    <Pressable onPress={() => { setTags(tags!.filter((_:any, i:any) => i !== index),); }}>
                                         <Text className="text-red-500 font-bold text-sm">x</Text>
                                     </Pressable>
                                 </View>
@@ -397,6 +344,9 @@ const EditReceipt = () => {
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleSave} className="bg-primary-250 px-5 py-2 rounded-3xl">
                             <Text className="text-white font-semibold text-xl">Save</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handlePreview} className="bg-gray-300 px-5 py-2 rounded-3xl">
+                            <Text className="text-gray-600 font-medium text-lg">Preview</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -499,3 +449,4 @@ const EditReceipt = () => {
 };
 
 export default EditReceipt;
+

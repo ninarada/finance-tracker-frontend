@@ -1,12 +1,12 @@
 import React from "react";
 import {
-    findNodeHandle,
-    Modal,
-    Pressable,
-    Text,
-    TouchableOpacity,
-    UIManager,
-    View,
+  findNodeHandle,
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  UIManager,
+  View,
 } from "react-native";
 
 export type SortOption = "recent" | "date" | "total";

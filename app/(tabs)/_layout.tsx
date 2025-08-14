@@ -32,7 +32,7 @@ const TabsLayout = () => {
       />
 
      <Tabs.Screen
-        name="scan"
+        name="scanNew"
         options={{
           title: 'Scan',
           tabBarIcon: ({ color, focused }) => (

@@ -1,6 +1,7 @@
-import FilterMenu, { FilterOptions } from "@/components/FilterMenu";
-import ReceiptModal from '@/components/ReceiptModal';
-import SortButton, { SortOption } from "@/components/SortMenu";
+import { PrimaryButton } from "@/components/buttons/PrimaryButton";
+import FilterMenu, { FilterOptions } from "@/components/menus/FilterMenu";
+import SortButton, { SortOption } from "@/components/menus/SortMenu";
+import ReceiptModal from '@/components/modals/ReceiptModal';
 import { getMyReceipts } from "@/services/receiptsService";
 import { Receipt } from "@/types/receipt";
 import { Ionicons, SimpleLineIcons } from "@expo/vector-icons";
@@ -39,7 +40,7 @@ const History = () => {
             try {
             const token = await AsyncStorage.getItem("token");
             if (!token) {
-                router.replace("/sign-in");
+                router.replace("/onboarding");
             } else {
                 const data = await getMyReceipts(token);
                 setReceipts(data);
@@ -148,7 +149,7 @@ const History = () => {
                         <Text className="text-2xl text-primary-700 font-semibold">No Receipts Available</Text>
                         <Text className="text-base text-gray-600 text-center">You haven't added any receipts yet. Once you start scanning, your receipt history will appear here for easy access and review.</Text>
                         <View className='bg-primary-200 px-6 py-3 rounded-full shadow-sm'>
-                            <TouchableOpacity onPress={()=>router.push('/scan')} className="flex-row gap-2 items-center">
+                            <TouchableOpacity onPress={()=>router.push('/scanNew')} className="flex-row gap-2 items-center">
                             <Text className="text-white text-xl uppercase font-bold">Start Creating</Text>
                             <SimpleLineIcons name="note" size={18} color="white" />
                             </TouchableOpacity>
@@ -167,9 +168,10 @@ const History = () => {
                                 setSortOption={setSortOption}
                                 setSortDirection={setSortDirection}
                             />
-                            <TouchableOpacity onPress={openFilterModal} className="bg-primary-300 px-4 py-2 rounded-full w-32 mb-2">
-                                <Text className="text-white text-center font-semibold">Filter</Text>
-                            </TouchableOpacity>
+                            <View className="w-32">
+                                <PrimaryButton title="Filter" onPress={openFilterModal} backgroundVersion="dark" fontSize="text-md"/>
+                            </View>
+                            
                         </View>
                         {displayedReceipts.map((receipt, index) => (
                             <TouchableOpacity
@@ -213,9 +215,13 @@ const History = () => {
                         ))}
 
                         {visibleCount < getSortedReceipts().length && (
-                            <TouchableOpacity onPress={loadMore} className="bg-primary-250 py-2 rounded-full mb-10">
-                                <Text className="text-center text-white font-semibold">Load More</Text>
-                            </TouchableOpacity>
+                            // <TouchableOpacity onPress={loadMore} className="bg-primary-250 py-2 rounded-full mb-10">
+                            //     <Text className="text-center text-white font-semibold">Load More</Text>
+                            // </TouchableOpacity>
+                            <View className="mb-10">
+                                <PrimaryButton title="Load More" onPress={loadMore} />
+                            </View>
+                            
                         )}
 
                         {/* Modal for Filter Menu */}

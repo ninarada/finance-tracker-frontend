@@ -2,6 +2,10 @@ import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from "react";
 import { Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { PrimaryButton } from '../buttons/PrimaryButton';
+import { SecondaryButton } from '../buttons/SecondaryButton';
+import { TertiaryButton } from '../buttons/TertiaryButton';
+
 
 type FilterOptions = {
   storeName: string;
@@ -59,9 +63,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ initialFilters, onApply, onCanc
     <View className="pb-5 px-5 pt-2">
 
         <View className='flex-row justify-end mb-2'>
-            <TouchableOpacity onPress={clearFilters}>
-                <Text className="text-slate-500 font-medium">clear</Text>
-            </TouchableOpacity>
+            <TertiaryButton title='clear' onPress={clearFilters}/>
         </View>
 
        
@@ -143,14 +145,9 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ initialFilters, onApply, onCanc
       )}
 
       {/* Buttons */}
-        <View className="flex-row justify-end  space-x-4 mt-2">
-          <TouchableOpacity onPress={onCancel} className="bg-gray-300 rounded-md py-2 px-5">
-            <Text className="font-semibold text-black">Cancel</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => onApply(filters)} className="bg-primary-250 rounded-2xl py-2 px-5">
-            <Text className="text-white font-semibold">Done</Text>
-          </TouchableOpacity>
+        <View className="flex-row justify-end  space-x-4 mt-2 gap-2">
+          <SecondaryButton title='Cancel' onPress={onCancel} fontSize="text-md"/>
+          <PrimaryButton title='Done' onPress={() => onApply(filters)} fontSize="text-md"/>
         </View>
     </View>
     </TouchableWithoutFeedback>

@@ -1,5 +1,5 @@
 import DottedLine from '@/assets/svg/dottedLine';
-import ReceiptModal from '@/components/ReceiptModal';
+import ReceiptModal from '@/components/modals/ReceiptModal';
 import { getCategoryItems, getReceiptById } from '@/services/receiptsService';
 import { addCategoryToFavourites, deleteCategory, getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';

@@ -1,7 +1,8 @@
+import { PrimaryButton } from "@/components/buttons/PrimaryButton";
 import MonthsBarChart from "@/components/charts/MonthsBarChart";
-import NewCategoryModal from "@/components/newCategoryModal";
+import NewCategoryModal from "@/components/modals/newCategoryModal";
+import ReceiptModal from "@/components/modals/ReceiptModal";
 import ReceiptCard from "@/components/ReceiptCard";
-import ReceiptModal from "@/components/ReceiptModal";
 import { images } from "@/constants/images";
 import { createCategory, getMyReceipts } from "@/services/receiptsService";
 import { AnalysisResult, Receipt } from "@/types/receipt";
@@ -35,18 +36,15 @@ const Home = () => {
         try {
           const token = await AsyncStorage.getItem("token");
           if (!token) {
-            router.replace("/sign-in");
+            router.replace("/onboarding");
             setUser(null);
             return;
           }
-  
           const profile = await getMyProfile(token);
-          console.log(profile);
           setUser(profile);
           if (profile.photo !== "/public/images/profile-picture.png") {
             setUserPhoto({ uri: profile.photo });
           }
-  
           const data = await getMyReceipts(token);
           setReceipts(data);
           const analysis = analyzeReceiptsThisMonth(data);
@@ -139,29 +137,29 @@ const Home = () => {
                 <Text className="text-xl font-bold text-text">{user?.name ? `${user.name}` : ""}!</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={()=> router.push('/inbox')}>
+            {/* <TouchableOpacity onPress={()=> router.push('/inbox')}>
               <FontAwesome size={28} name="bell-o" color="#64748B"/> 
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <View className="gap-3 mb-7">
             <Text className="text-xl font-medium text-text">Quick Actions</Text>
             <View className="flex-row justify-evenly">
-              <Pressable onPress={()=> router.push('/scanReceipt')} className="justify-center items-center gap-2">
+              <Pressable onPress={()=> router.push('/new-receipt/scan')} className="justify-center items-center gap-2">
                 <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200 shadow-sm">
                   <Ionicons name="camera-outline" size={40} color="white" />
                 </View>
                 <Text className="text-sm text-slate-500">scan</Text>
               </Pressable>
 
-              <Pressable onPress={()=> router.push('/importReceipt')} className="justify-center items-center gap-2">
+              <Pressable onPress={()=> router.push('/new-receipt/import')} className="justify-center items-center gap-2">
                 <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200 shadow-sm">
                   <FontAwesome name="photo" size={32} color="white" />
                 </View>
                 <Text className="text-sm text-slate-500">import</Text>
               </Pressable>
 
-              <Pressable onPress={()=> router.push('/editReceipt')} className="justify-center items-center gap-2">
+              <Pressable onPress={()=> router.push('/new-receipt/manually')} className="justify-center items-center gap-2">
                 <View className="h-24 w-24 rounded-full justify-center items-center bg-primary-200 shadow-sm">
                   <FontAwesome6 name="pencil" size={30} color="white" />
                 </View>
@@ -254,19 +252,23 @@ const Home = () => {
             {user && (
               <View className="flex-row flex-wrap gap-3 justify-evenly">
                 {user.categories.length > 0 &&  user.categories.slice(0, 6).map((category: string, index: React.Key | null | undefined) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => handleCategoryPress(category)}
-                      className="px-4 py-2 rounded-2xl bg-primary-100 items-center shadow-sm justify-center" 
-                    >
-                      <Text className="text-white  font-semibold">{category}</Text>
-                    </TouchableOpacity>
+                    // <TouchableOpacity
+                    //   key={index}
+                    //   onPress={() => handleCategoryPress(category)}
+                    //   className="px-4 py-2 rounded-2xl bg-primary-100 items-center shadow-sm justify-center" 
+                    // >
+                    //   <Text className="text-white  font-semibold">{category}</Text>
+                    // </TouchableOpacity>
+                    <View key={index} className="shadow-sm">
+                      <PrimaryButton  title={category} onPress={() => handleCategoryPress(category)} fontSize="text-md" backgroundColor="bg-primary-100" />
+                    </View>
+                    
                 ))}
               </View>
             )}
             <View className="flex-row mt-2 justify-center">
               <Pressable onPress={() => router.push('/categories')} className="px-5 py-1  rounded-2xl bg-primary-50 shadow-sm">
-                <Text className="text-primary-200 text-center text-lg font-semibold">
+                <Text className="text-primary-200 text-center text-md font-semibold">
                   see more
                 </Text>
               </Pressable>

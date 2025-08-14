@@ -10,12 +10,12 @@ export function convertParsedReceiptToMongooseFormat(
     if (rawQty.includes('x')) {
       const match = rawQty.match(/(\d+(?:\.\d+)?)[x×](\d+(?:\.\d+)?)/);
       if (match) {
-        quantity = parseFloat(match[1]) * parseFloat(match[2]);
+        quantity = parseFloat(match[1]) * parseFloat(match[2]) || 1;
       } else {
-        quantity = parseFloat(rawQty.replace(/[x×]/g, ''));
+        quantity = parseFloat(rawQty.replace(/[x×]/g, '')) || 1;
       }
     } else {
-      quantity = parseFloat(rawQty);
+      quantity = parseFloat(rawQty) || 1;
     }
 
     const unitPrice = parseFloat(item.itemUnitPrice?.replace(',', '.') || '0');

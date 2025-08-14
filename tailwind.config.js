@@ -1,6 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}"],
+  safelist: [
+    'bg-error',
+    'bg-error-light',
+    'bg-error-dark',
+    'bg-success',
+    'bg-success-light',
+    'bg-success-dark',
+    'bg-warning',
+    'bg-warning-light',
+    'bg-warning-dark',
+    'bg-primary-10',
+    'bg-primary-50',
+    'bg-primary-100',
+    'bg-primary-200',
+    'bg-primary-300',
+    'bg-primary-400',
+    'bg-primary-500',
+    'bg-primary-600',
+    'bg-primary-700',
+  ],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {

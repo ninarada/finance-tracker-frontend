@@ -46,7 +46,7 @@ const Analytics = () => {
         try {
             const token = await AsyncStorage.getItem("token");
             if (!token) {
-                router.replace("/sign-in");
+                router.replace("/onboarding");
             } else {
                 const data = await getMyReceipts(token);
                 setReceipts(data);
@@ -77,7 +77,7 @@ const Analytics = () => {
               <Text className="text-2xl text-primary-700 font-semibold">No Receipts Available</Text>
               <Text className="text-base text-gray-600 text-center">It looks like you haven't added any receipts yet. Once you start scanning, your spending insights and trends will appear here.</Text>
               <View className='bg-primary-200 px-6 py-3 rounded-full shadow-sm'>
-                <TouchableOpacity onPress={()=>router.push('/scan')} className="flex-row gap-2 items-center">
+                <TouchableOpacity onPress={()=>router.push('/scanNew')} className="flex-row gap-2 items-center">
                   <Text className="text-white text-xl uppercase font-bold">Start Creating</Text>
                   <SimpleLineIcons name="note" size={18} color="white" />
                 </TouchableOpacity>

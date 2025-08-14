@@ -1,5 +1,5 @@
 import DottedLine from '@/assets/svg/dottedLine';
-import NewCategoryModal from '@/components/newCategoryModal';
+import NewCategoryModal from '@/components/modals/newCategoryModal';
 import { createCategory } from '@/services/receiptsService';
 import { getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';

@@ -24,7 +24,7 @@ const Profile = () => {
       try {
         const token = await AsyncStorage.getItem("token");
         if (!token) {
-          router.replace("/sign-in");
+          router.replace("/onboarding");
           setUser(null);
         } else {
           const profile = await getMyProfile(token);
@@ -49,7 +49,7 @@ const Profile = () => {
     try {
       await AsyncStorage.removeItem("token");
       setUser(null);
-      router.replace("/");
+      router.replace("/onboarding");
     } catch (error) {
       Alert.alert("Error", "Failed to log out.");
     }

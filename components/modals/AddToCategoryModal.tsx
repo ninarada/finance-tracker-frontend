@@ -2,6 +2,7 @@ import { getMyProfile } from "@/services/userService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { PrimaryButton } from "../buttons/PrimaryButton";
 
 interface CategoryModalProps {
     itemCategories: { [key: number]: string[] };
@@ -72,36 +73,42 @@ const AddToCategoryModal: React.FC<CategoryModalProps> = ({  itemCategories, set
         >
             <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 justify-center items-center z-50">
                 <View className="w-11/12 max-h-[71%] bg-white rounded-2xl p-4">
-                    <Text className="text-lg font-semibold mb-1 text-center">Choose or Create New Categories</Text>
-                    <View className="flex-row items-center gap-2 my-4">
+                    <Text className="text-xl font-semibold mb-6 text-center text-primary-700">Choose or Create Categories</Text>
+                    <View className="flex-row items-center gap-2 my-4 mb-5">
                         <TextInput
                             placeholder="New category"
-                            className="flex-1 border border-gray-300 px-3 py-2 rounded-2xl text-sm"
+                            className="flex-1 border border-gray-300 px-3 py-3 rounded-2xl text-md"
                             value={categoryInput}
                             onChangeText={setCategoryInput}
                         />
                     </View>
+                    {categoryInput.trim() && !availableCategories.some(
+                        (cat) => cat.toLowerCase() === categoryInput.trim().toLowerCase()
+                    ) && (
+                            // <Pressable onPress={handleAddNewCategory} className="bg-primary-50 px-3 py-2 rounded-2xl mb-2 border border-primary-300">
+                            //     <Text className="text-primary-300 italic">+ Create "{categoryInput.trim()}"</Text>
+                            // </Pressable>
+                        <View className="flex-row justify-center mb-4">
+                            <PrimaryButton title={`+ Create ${categoryInput.trim()}`} onPress={handleAddNewCategory} fontSize="text-md"/>
+                        </View>
+                    )}
+                    {filteredCategories.length > 0 ? (
+                        <Text className="text-slate-500 mb-2 italic">Your existing categories:</Text>
+                    ) : (
+                        <Text className="text-slate-500 mb-2 italic">No matching categories</Text>
+                    )}
                     <ScrollView className="mb-3">
-                        {categoryInput.trim() && !availableCategories.some(
-                            (cat) => cat.toLowerCase() === categoryInput.trim().toLowerCase()
-                        ) && (
-                            <Pressable onPress={handleAddNewCategory} className="bg-primary-50 px-3 py-2 rounded-2xl mb-2 border border-primary-300">
-                                <Text className="text-primary-300 italic">+ Create "{categoryInput.trim()}"</Text>
-                            </Pressable>
-                        )}
                         {filteredCategories.map((category, index) => {
                             const selected = itemCategories[selectedItemIndex]?.includes(category);
                             return (
-                                <Pressable key={index} onPress={() => handleToggleCategory(category, selected)} className={`px-3 py-2 rounded-xl mb-2 ${selected ? "bg-purple-200" : "bg-gray-100" }`}>
-                                    <Text className="text-gray-800">{category}</Text>
+                                <Pressable key={index} onPress={() => handleToggleCategory(category, selected)} className={`px-4 py-2 rounded-full mb-2 ${selected ? "bg-primary-100" : "bg-primary-50" }`}>
+                                    <Text className="text-gray-700">{category}</Text>
                                 </Pressable>
                             );
                         })}
                     </ScrollView>
 
-                    <Pressable onPress={onDone} className="mt-4 bg-primary-250 px-4 py-2 rounded-xl">
-                        <Text className="text-white text-center font-semibold">Done</Text>
-                    </Pressable>
+                    <PrimaryButton title="Done" onPress={onDone}/>
                 </View>
             </View>
         </Modal>

@@ -1,20 +1,56 @@
+import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
+import { DeleteAccountModal } from "@/components/modals/DeleteAccountModal";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React from "react";
-import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Settings = () => {
   const router = useRouter();
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const tokenData = await AsyncStorage.getItem("token");
+        if (!tokenData) {
+          router.replace("/onboarding");
+          setToken('');
+          return;
+        }
+        setToken(tokenData);
+      } catch (error) {
+        Alert.alert("Error", "Failed to load token.");
+      }
+    }
+    fetchToken();
+  }, []);
 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("token");
-      router.replace("/sign-in");
+      router.replace("/onboarding");
     } catch (error) {
       Alert.alert("Error", "Failed to log out.");
     }
+  };
+
+  const handleDarkMode = () => {
+    Alert.alert(
+      "Coming Soon",
+      "Dark mode will be available in a future update."
+    );
+  };
+
+  const handleCurrencyChange = () => {
+    Alert.alert(
+      "Coming Soon",
+      "Currency change will be available in a future update."
+    );
   };
 
   return (
@@ -36,21 +72,23 @@ const Settings = () => {
           <Text className="text-lg font-semibold mb-2">App Preferences</Text>
           <View className="flex-row justify-between items-center py-2">
             <Text>Dark Mode</Text>
-            <Switch value={false} onValueChange={() => {}} />
+            <Switch value={false} onValueChange={handleDarkMode} />
           </View>
           <View className="flex-row justify-between items-center py-2">
             <Text>Currency</Text>
-            <Text className="text-primary-250">€</Text>
+            <TouchableOpacity onPress={handleCurrencyChange}>
+              <Text className="text-primary-250">€</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Account */}
         <View className="bg-white rounded-xl p-4 mb-4">
           <Text className="text-lg font-semibold mb-2">Account</Text>
-          <Pressable onPress={() => Alert.alert("Coming soon")}>
+          <Pressable onPress={() => setShowChangePasswordModal(true)}>
             <Text className="text-primary-300">Change Password</Text>
           </Pressable>
-          <Pressable onPress={() => Alert.alert("Coming soon")} className="mt-3">
+          <Pressable onPress={() => setShowDeleteAccountModal(true)} className="mt-3">
             <Text className="text-error-dark">Delete Account</Text>
           </Pressable>
         </View>
@@ -74,6 +112,19 @@ const Settings = () => {
           <Text className="text-white font-semibold text-lg">Log Out</Text>
         </Pressable>
       </ScrollView>
+      
+      <ChangePasswordModal
+        visible={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        token={token}
+      />
+
+      <DeleteAccountModal 
+        visible={showDeleteAccountModal}
+        onClose={() => setShowDeleteAccountModal(false)}
+        token={token}
+      />
+      
     </SafeAreaView>
   );
 };

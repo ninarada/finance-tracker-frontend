@@ -7,7 +7,6 @@ export interface ReceiptItem {
 }
 
 export type PaymentMethod = 'Cash' | 'Card' | 'Mobile' | 'Other';
-
   
 export interface Receipt {
     _id: string;

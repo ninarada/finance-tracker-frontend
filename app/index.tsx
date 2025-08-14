@@ -3,7 +3,8 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Onboarding from "./onboarding";
+import Onboarding from "./(auth)/onboarding";
+
 
 export default function Index() {
   const [showOnboarding, setShowOnboarding] = useState(false);

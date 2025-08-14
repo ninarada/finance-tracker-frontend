@@ -1,7 +1,9 @@
 import { Receipt } from "@/types/receipt";
 import { useRouter } from "expo-router";
 import React from 'react';
-import { Modal, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Text, View } from 'react-native';
+import { PrimaryButton } from "../buttons/PrimaryButton";
+import { TertiaryButton } from "../buttons/TertiaryButton";
 
 interface ReceiptModalProps {
   receipt: Receipt | null;
@@ -17,8 +19,12 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
   const handleReceiptEditPress = (receiptId: string) => {
     onClose();
     router.push({
-      pathname: "/editReceipt",
-      params: { receiptId },
+      pathname: "/new-receipt/edit",
+      params: {
+        mode: 'update',
+        receiptId: JSON.stringify(receiptId),
+        data: JSON.stringify(receipt), 
+      },
     });
   };
 
@@ -31,9 +37,10 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
     >
       <View className="flex-1 justify-center items-center bg-black/50 px-5">
         <View className="bg-white w-full rounded-2xl p-5">
-          <TouchableOpacity onPress={() => handleReceiptEditPress(receipt._id)} className="items-end">
-            <Text>edit</Text>
-          </TouchableOpacity>
+          <View className="flex-row justify-end">
+            <TertiaryButton title="edit" onPress={() => handleReceiptEditPress(receipt._id)}/>
+          </View>
+
           <Text className="text-xl font-bold mb-2">{receipt?.store || "Receipt"}</Text>
           <Text className="text-sm text-gray-500 mb-2">
             Date: {receipt ? new Date(receipt.date).toLocaleDateString() : ""}
@@ -76,12 +83,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
             <Text className="text-xs text-gray-500 mb-2">Tags: {receipt.tags.join(", ")}</Text>
           )}
 
-          <Pressable
-            className="mt-3 bg-primary-250 px-4 py-2 rounded-xl"
-            onPress={onClose}
-          >
-            <Text className="text-white text-center font-semibold">Close</Text>
-          </Pressable>
+          <PrimaryButton title="Close" onPress={onClose} fontSize="text-md"/>
         </View>
       </View>
     </Modal>
