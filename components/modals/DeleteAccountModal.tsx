@@ -7,13 +7,11 @@ import { TertiaryButton } from "../buttons/TertiaryButton";
 interface DeleteAccountModalProps {
     visible: boolean;
     onClose: () => void;
-    token: string;
 }
 
 export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
     visible,
     onClose,
-    token,
 }) => {    
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -25,7 +23,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
     }
     try {
       setLoading(true);
-      await deleteUser(token, password);
+      await deleteUser(password);
       Alert.alert("Success", "Password changed successfully");
       setPassword("");
       onClose();

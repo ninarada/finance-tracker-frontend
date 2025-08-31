@@ -1,14 +1,17 @@
+import { useAuth } from "@/AuthContext";
 import { images } from "@/constants/images";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { getMyProfile, getUserStats, updateProfile } from "../../services/userService";
 
 const Profile = () => {
+  const router = useRouter();
+  const { token } = useAuth();
   const [user, setUser] = useState<any>(null);
   const [userPhoto, setUserPhoto] = useState<any>(images.profile_picture);
   const [stats, setStats] = useState<any>(null);
@@ -16,34 +19,26 @@ const Profile = () => {
   const [editUser, setEditUser] = useState<any>(null);
   const [editUserPhoto, setEditUserPhoto] = useState<any>(images.profile_picture);
 
-
-  const router = useRouter();
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const profile = await getMyProfile();
+      const statsData = await getUserStats();
+      setUser(profile);
+      if (profile.photo !== "/public/images/profile-picture.png") {
+        setUserPhoto({ uri: profile.photo });
+        setEditUserPhoto({ uri: profile.photo });
+      }
+      setEditUser(profile);
+      setStats(statsData);
+    } catch (error) {
+      Alert.alert("Error", "Failed to load profile data.");
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        if (!token) {
-          router.replace("/onboarding");
-          setUser(null);
-        } else {
-          const profile = await getMyProfile(token);
-          const statsData = await getUserStats(token);
-          setUser(profile);
-          if (profile.photo !== "/public/images/profile-picture.png") {
-            setUserPhoto({ uri: profile.photo });
-            setEditUserPhoto({ uri: profile.photo });
-          }
-          setEditUser(profile);
-          setStats(statsData);
-        }
-      } catch (error) {
-        Alert.alert("Error", "Failed to load profile data.");
-      }
-    };
-
+    if (!token) return;
     fetchUserProfile();
-  }, []);
+  }, [token, fetchUserProfile]);
 
   const handleLogout = async () => {
     try {
@@ -61,7 +56,6 @@ const Profile = () => {
       quality: 1,
       base64: true, 
     });
-  
     if (!result.canceled && result.assets.length > 0) {
       const selectedImage = result.assets[0];
       setEditUser({
@@ -83,9 +77,8 @@ const Profile = () => {
 
   const handleSaveEdit = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      if(token && editUser.name && editUser.surname) {
-        await updateProfile(token, {
+      if(editUser.name && editUser.surname) {
+        await updateProfile({
           name: editUser.name,
           surname: editUser.surname,
           location: editUser.location,

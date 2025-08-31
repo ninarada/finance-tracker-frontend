@@ -1,19 +1,20 @@
 import DottedLine from '@/assets/svg/dottedLine';
+import { useAuth } from '@/AuthContext';
 import ReceiptModal from '@/components/modals/ReceiptModal';
 import { getCategoryItems, getReceiptById } from '@/services/receiptsService';
 import { addCategoryToFavourites, deleteCategory, getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
 import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const CategoryOverview = () => {
   const { name } = useLocalSearchParams<{ name: string }>();
   const router = useRouter();
+  const { token } = useAuth();
   const [categoryItems, setCategoryItems] = useState<any[]>([]);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
@@ -23,48 +24,34 @@ const CategoryOverview = () => {
   const [isFavourited, setIsFavourited] = useState(false);
   const [favouritesCount, setFavouritesCount] = useState(0);
   
-  useEffect(() => {
-    const fetchCategoryItems = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        if (!token) {
-          router.replace("/sign-in");
-        } else {
-          const data = await getCategoryItems(token, name);
-          setCategoryItems(data);
-          const dataStats = await fetchCategoryStatsByName(token, name);
-          setCategoryStats([dataStats]); 
-          const userData = await getMyProfile(token);
-          const isFavourite = userData.favouriteCategories.includes(name);
-          setIsFavourited(isFavourite);
-          const count = userData.favouriteCategories.lenght;
-          setFavouritesCount(count)
-        }
-      } catch (error) {
-        Alert.alert("Error", "Failed to load profile data.");
-      }
-    };
-
-    fetchCategoryItems();
+  const fetchCategoryItems = useCallback(async () => {
+    try {
+      const data = await getCategoryItems(name);
+      setCategoryItems(data);
+      const dataStats = await fetchCategoryStatsByName(name);
+      setCategoryStats([dataStats]); 
+      const userData = await getMyProfile();
+      const isFavourite = userData.favouriteCategories.includes(name);
+      setIsFavourited(isFavourite);
+      const count = userData.favouriteCategories.lenght;
+      setFavouritesCount(count)
+    } catch (error) {
+      Alert.alert("Error", "Failed to load profile data.");
+    }
   }, []);
+
+  useEffect(() => {
+    fetchCategoryItems();
+  }, [fetchCategoryItems]);
 
   const handleViewReceipt = async (receiptId: string) => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        router.replace("/sign-in");
-        return;
-      }
-      const receipt = await getReceiptById(token, receiptId);
+      const receipt = await getReceiptById(receiptId);
       setSelectedReceipt(receipt);
     } catch (error) {
       Alert.alert("Error", "Failed to load receipt.");
     }
   };
-
-  // useEffect(() => {
-  //   console.log("Updated categoryItems:", categoryStats);
-  // }, [categoryStats]);
 
   const sortedCategoryItems = [...categoryItems].sort((a, b) => {
     if (sortOption === 'name') {
@@ -88,23 +75,14 @@ const CategoryOverview = () => {
       "Delete Category",
       `Are you sure you want to delete the category "${name}"? This will remove it from all receipts.`,
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel",},
         {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem("token");
-              if (!token) {
-                router.replace("/sign-in");
-                return;
-              }
-              await deleteCategory(token, name);
+              await deleteCategory(name);
               Alert.alert("Deleted", `Category "${name}" was deleted successfully.`);
-              router.back();
             } catch (error: any) {
               Alert.alert("Error", error.message || "Failed to delete category.");
             }
@@ -114,14 +92,10 @@ const CategoryOverview = () => {
     );
   };
 
+
   const handleAddToFavourites = async() => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        Alert.alert("Unauthorized", "Please sign in first.");
-        return;
-      }
-      const response = await addCategoryToFavourites(token, name, !isFavourited);
+      const response = await addCategoryToFavourites( name, !isFavourited);
       const isNowFavourited = response.favouriteCategories.includes(name);
       setIsFavourited(isNowFavourited);
     } catch (error: any) {
@@ -133,6 +107,8 @@ const CategoryOverview = () => {
       }
     }
   }
+
+
 
   return (
     <SafeAreaProvider>

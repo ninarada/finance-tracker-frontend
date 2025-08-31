@@ -5,11 +5,9 @@ import ReceiptModal from '@/components/modals/ReceiptModal';
 import { getMyReceipts } from "@/services/receiptsService";
 import { Receipt } from "@/types/receipt";
 import { Ionicons, SimpleLineIcons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { Alert, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const PAGE_SIZE = 5;
@@ -34,26 +32,13 @@ const History = () => {
 
     const [modalVisible, setModalVisible] = useState(false);
 
-    useFocusEffect(
-        useCallback(() => {
-        const fetchReceipts = async () => {
-            try {
-            const token = await AsyncStorage.getItem("token");
-            if (!token) {
-                router.replace("/onboarding");
-            } else {
-                const data = await getMyReceipts(token);
-                setReceipts(data);
-                setVisibleCount(PAGE_SIZE);
-            }
-            } catch (error) {
-            Alert.alert("Error", "Failed to load receipts data.");
-            }
-        };
+    const fetchReceipts = useCallback(async () => {
+        const data = await getMyReceipts();
+        setReceipts(data);
+        setVisibleCount(PAGE_SIZE);
+    }, []);
 
-        fetchReceipts();
-        }, [])
-    );
+    useFocusEffect(useCallback(() => { fetchReceipts(); }, [fetchReceipts]));
 
     const getFilteredReceipts = () => {
         return receipts.filter((receipt) => {

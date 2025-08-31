@@ -4,7 +4,7 @@ import NewCategoryModal from "@/components/modals/newCategoryModal";
 import ReceiptModal from "@/components/modals/ReceiptModal";
 import ReceiptCard from "@/components/ReceiptCard";
 import { images } from "@/constants/images";
-import { createCategory, getMyReceipts } from "@/services/receiptsService";
+import { getMyReceipts } from "@/services/receiptsService";
 import { AnalysisResult, Receipt } from "@/types/receipt";
 import { analyzeReceiptsThisMonth } from "@/utils/analyzeReceiptsThisMonth";
 import { CategoryStats, fetchCategoryStatsByName } from "@/utils/categoryStats";
@@ -12,10 +12,9 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { getMyProfile } from "../../services/userService";
 
@@ -30,89 +29,35 @@ const Home = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [favStats, setFavStats] = useState<{[key: string]: CategoryStats}>({});
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchAll = async () => {
-        try {
-          const token = await AsyncStorage.getItem("token");
-          if (!token) {
-            router.replace("/onboarding");
-            setUser(null);
-            return;
-          }
-          const profile = await getMyProfile(token);
-          setUser(profile);
-          if (profile.photo !== "/public/images/profile-picture.png") {
-            setUserPhoto({ uri: profile.photo });
-          }
-          const data = await getMyReceipts(token);
-          setReceipts(data);
-          const analysis = analyzeReceiptsThisMonth(data);
-          setThisMonthData(analysis);
-  
-          if (profile.favouriteCategories?.length > 0) {
-            const statsArray = await Promise.all(
-              profile.favouriteCategories.map(async (category: string) => {
-                const stats = await fetchCategoryStatsByName(token, category);
-                return { category, stats };
-              })
-            );
-            const statsObject = statsArray.reduce((acc, { category, stats }) => {
-              acc[category] = stats;
-              return acc;
-            }, {});
-            setFavStats(statsObject);
-          }
-  
-        } catch (error) {
-          // Alert.alert("Error", "Failed to load profile data.");
-          await AsyncStorage.removeItem("token");
-          router.replace("/onboarding");
-        }
-      };
-      fetchAll();
-    }, [])
-  );
-  
-  const handleCategoryPress = (name: string) => {
-    router.push({
-      pathname: "/categoryOverview",
-      params: { name },
-    });
-  };
+  const fetchAll = useCallback(async () => {
+      const profile = await getMyProfile();
+      setUser(profile);
+      if (profile.photo !== "/public/images/profile-picture.png") {
+        setUserPhoto({ uri: profile.photo });
+      }
 
-  const handleCreateCategory = async (name: string) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        router.replace("/sign-in");
-        setUser(null);
-        return;
-      } 
-      const data = await createCategory(token, name);
-      setUser((prevUser: any) => ({
-        ...prevUser,
-        categories: data.categories,
-      }));
-      Alert.alert('Success', 'Category created successfully.',
-        [
-          {
-            text: 'Close',
-            onPress: () => console.log('Alert closed'),  
-            style: 'cancel',
-          },
-          {
-            text: 'See Category',
-            onPress: () => {handleCategoryPress(name)},
-            style: 'default',
-          },
-        ],
-        { cancelable: true }
-      );
-    } catch (error: any) {
-      Alert.alert('Error', error?.message || 'Failed to create category.');
-    }
-  };
+      const data = await getMyReceipts();
+      setReceipts(data);
+      
+      const analysis = analyzeReceiptsThisMonth(data);
+      setThisMonthData(analysis);
+
+      if (profile.favouriteCategories?.length > 0) {
+        const statsArray = await Promise.all(
+          profile.favouriteCategories.map(async (category: string) => {
+            const stats = await fetchCategoryStatsByName( category);
+            return { category, stats };
+          })
+        );
+        const statsObject = statsArray.reduce((acc, { category, stats }) => {
+          acc[category] = stats;
+          return acc;
+        }, {});
+        setFavStats(statsObject);
+      }
+  }, []);
+
+  useFocusEffect(useCallback(() => { fetchAll(); }, [fetchAll]));
 
   const openReceiptModal = (receipt: Receipt) => {
     setSelectedReceipt(receipt);
@@ -233,7 +178,7 @@ const Home = () => {
           </View>
 
           <View className="mb-7 gap-4">
-            <Text className="text-xl font-medium text-text">Spending Last 6 Months</Text>
+            <Text className="text-xl font-medium text-text">Spending Last 4 Months</Text>
             {receipts && (
               <View className="rounded-3xl shadow-sm">
               <MonthsBarChart receipts={receipts} /></View>
@@ -251,16 +196,9 @@ const Home = () => {
             </View>
             {user && (
               <View className="flex-row flex-wrap gap-3 justify-evenly">
-                {user.categories.length > 0 &&  user.categories.slice(0, 6).map((category: string, index: React.Key | null | undefined) => (
-                    // <TouchableOpacity
-                    //   key={index}
-                    //   onPress={() => handleCategoryPress(category)}
-                    //   className="px-4 py-2 rounded-2xl bg-primary-100 items-center shadow-sm justify-center" 
-                    // >
-                    //   <Text className="text-white  font-semibold">{category}</Text>
-                    // </TouchableOpacity>
+                {user.categories.length > 0 &&  user.categories.slice(0, 6).map((name: string, index: React.Key | null | undefined) => (
                     <View key={index} className="shadow-sm">
-                      <PrimaryButton  title={category} onPress={() => handleCategoryPress(category)} fontSize="text-md" backgroundColor="bg-primary-100" />
+                      <PrimaryButton  title={name} onPress={() => router.push({pathname: '/categoryOverview' ,params: { name },})} fontSize="text-md" backgroundColor="bg-primary-100" />
                     </View>
                     
                 ))}
@@ -344,7 +282,7 @@ const Home = () => {
           <NewCategoryModal 
             visible={newCategoryModalVisible}
             onClose={() => setNewCategoryModalVisible(false)}
-            onCreate={handleCreateCategory}
+            onSuccess={()=>setNewCategoryModalVisible(false)}
           />
 
           {selectedReceipt && !isEditing && (

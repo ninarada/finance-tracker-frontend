@@ -1,14 +1,14 @@
+import { deleteReceipt } from "@/services/receiptsService";
 import { Receipt } from "@/types/receipt";
 import { useRouter } from "expo-router";
 import React from 'react';
-import { Modal, Text, View } from 'react-native';
+import { Alert, Modal, Text, View } from 'react-native';
 import { PrimaryButton } from "../buttons/PrimaryButton";
 import { TertiaryButton } from "../buttons/TertiaryButton";
 
 interface ReceiptModalProps {
   receipt: Receipt | null;
   onClose: () => void;
-  
 }
 
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
@@ -22,11 +22,35 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
       pathname: "/new-receipt/edit",
       params: {
         mode: 'update',
-        receiptId: JSON.stringify(receiptId),
+        receiptId: receiptId,
         data: JSON.stringify(receipt), 
       },
     });
   };
+
+  const handleReceiptDeletePress = (receiptId: string) => {
+    Alert.alert(
+      "Delete Receipt",
+      `Are you sure you want to delete this receipt?`,
+      [
+        { text: "Cancel", style: "cancel",},
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteReceipt(receiptId);
+              onClose();
+              router.replace('/history');
+              Alert.alert("Deleted", `Receipt was deleted successfully.`);
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to delete receipt.");
+            }
+          },
+        },
+      ]
+    );
+  }
 
   return (
     <Modal
@@ -37,8 +61,9 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
     >
       <View className="flex-1 justify-center items-center bg-black/50 px-5">
         <View className="bg-white w-full rounded-2xl p-5">
-          <View className="flex-row justify-end">
+          <View className="flex-row justify-between mb-5">
             <TertiaryButton title="edit" onPress={() => handleReceiptEditPress(receipt._id)}/>
+            <TertiaryButton title="delete" onPress={() => handleReceiptDeletePress(receipt._id)}/>
           </View>
 
           <Text className="text-xl font-bold mb-2">{receipt?.store || "Receipt"}</Text>

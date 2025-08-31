@@ -5,7 +5,6 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 const ScanReceipt = () => {
   const router = useRouter();
-
   return (
     <SafeAreaProvider>
       <SafeAreaView className="h-full pb-7 items-center justify-center bg-primary-10">

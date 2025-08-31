@@ -1,3 +1,5 @@
+import { createCategory } from '@/services/receiptsService';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Modal, Text, TextInput, View } from 'react-native';
 import { PrimaryButton } from '../buttons/PrimaryButton';
@@ -6,23 +8,37 @@ import { SecondaryButton } from '../buttons/SecondaryButton';
 interface ModalProps {
     visible: boolean;
     onClose: () => void;
-    onCreate: (name: string) => void;
+    onSuccess: (categoryName: string) => void;
 }
 
-const NewCategoryModal: React.FC<ModalProps> = ({ visible, onClose, onCreate }) => {
+const NewCategoryModal: React.FC<ModalProps> = ({ visible, onClose, onSuccess }) => {
+    const router = useRouter();
     const [categoryName, setCategoryName] = useState('');
 
-    const handleCreate = () => {
-        if (!categoryName) {
+    const handleCreate = async (nameInput: string) => {
+        if (!nameInput) {
             Alert.alert("Error", "Category name is required.");
             return;
         }
-        if (categoryName.trim() !== '') {
-            onCreate(categoryName.trim());
-            setCategoryName('');
-            onClose();
-        }
-    };
+        const name = nameInput.trim();
+        try {
+            await createCategory(name);
+            onSuccess(name);
+            Alert.alert('Success', 'Category created successfully.',
+              [
+                {
+                  text: 'Close', style: 'cancel',
+                },
+                {
+                  text: 'See Category', onPress: () =>  router.push({ pathname: '/categoryOverview', params: { name }}), style: 'default',
+                },
+              ],
+              { cancelable: true }
+            );
+          } catch (error: any) {
+            Alert.alert('Error', error?.message || 'Failed to create category.');
+          }
+    }
 
     const handleClose = () => {
         setCategoryName('');
@@ -56,7 +72,7 @@ const NewCategoryModal: React.FC<ModalProps> = ({ visible, onClose, onCreate }) 
 
                     <View className="flex-row justify-end gap-2">
                         <SecondaryButton title='Cancel' onPress={handleClose} fontSize='text-md'/>
-                        <PrimaryButton title='Create' onPress={handleCreate} fontSize='text-md'/>
+                        <PrimaryButton title='Create' onPress={()=>handleCreate(categoryName)} fontSize='text-md'/>
                     </View>
                 </View>
             </View>

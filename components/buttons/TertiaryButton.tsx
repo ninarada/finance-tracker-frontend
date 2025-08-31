@@ -24,7 +24,7 @@ export const TertiaryButton: React.FC<TertiaryButtonProps> = ({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className={`${backgroundColor} py-2 px-5 justify-center`}
+      className={`${backgroundColor} justify-center`}
       disabled={disabled} 
     >
       <Text className={`${textColor} text-center ${fontSize} ${uppercase ? "uppercase" : ""}`}>

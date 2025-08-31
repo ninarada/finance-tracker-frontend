@@ -1,11 +1,10 @@
 import DottedLine from '@/assets/svg/dottedLine';
+import { useAuth } from '@/AuthContext';
 import NewCategoryModal from '@/components/modals/newCategoryModal';
-import { createCategory } from '@/services/receiptsService';
 import { getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
 import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -13,68 +12,37 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const AllCategories = () => {
     const router = useRouter();
+    const { token } = useAuth();
     const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
     const [loading, setLoading] = useState(true);
     const [sortOption, setSortOption] = useState<"name" | "total">("total");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
     const [newCategoryModalVisible, setNewCategoryModalVisible] = useState(false);
-      
-    // useEffect(() => {
-    //     const fetchCategoriesAndStats = async () => {
-    //     try {
-    //         const token = await AsyncStorage.getItem('token');
-    //         if (!token) {
-    //             router.replace('/sign-in');
-    //             return;
-    //         }
-    //         const profile = await getMyProfile(token);
-    //         const categories = profile.categories || [];
-    //         const statsPromises = categories.map((category: string) =>fetchCategoryStatsByName(token, category));
-    //         const statsResults = await Promise.all(statsPromises);
-    //         setCategoryStats(statsResults);
-    //     } catch (error) {
-    //         Alert.alert('Error', 'Failed to load categories and stats.');
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    //     };
-    //     fetchCategoriesAndStats();
-    // }, []);
+
     
     const fetchCategoriesAndStats = async () => {
         try {
-          const token = await AsyncStorage.getItem('token');
-          if (!token) {
-            router.replace('/sign-in');
-            return;
-          }
-          const profile = await getMyProfile(token);
-          const categories = profile.categories || [];
-          const statsPromises = categories.map((category: string) =>
-            fetchCategoryStatsByName(token, category)
-          );
-          const statsResults = await Promise.all(statsPromises);
-          setCategoryStats(statsResults);
+            const profile = await getMyProfile();
+            const categories = profile.categories || [];
+            const statsPromises = categories.map((category: string) =>
+                fetchCategoryStatsByName(category)
+            );
+            const statsResults = await Promise.all(statsPromises);
+            setCategoryStats(statsResults);
         } catch (error) {
-          Alert.alert('Error', 'Failed to load categories and stats.');
+            Alert.alert('Error', 'Failed to load categories and stats.');
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
     };
 
     useFocusEffect(
         useCallback(() => {
-          fetchCategoriesAndStats();
+            fetchCategoriesAndStats();
         }, [])
     );
 
-    const handleCategoryPress = (name: string) => {
-        router.push({
-        pathname: '/categoryOverview',
-        params: { name },
-        });
-    };
 
     const sortedCategoryStats = [...categoryStats].sort((a, b) => {
         if (sortOption === "total") {
@@ -98,35 +66,10 @@ const AllCategories = () => {
         setSortMenuVisible(false);
     };
 
-    const handleCreateCategory = async (name: string) => {
-        try {
-            const token = await AsyncStorage.getItem('token');
-            if (!token) {
-              router.replace("/sign-in");
-              return;
-            } 
-            const data = await createCategory(token, name);
-            const newCategoryStats = await fetchCategoryStatsByName(token, name);
-            setCategoryStats(prev => [...prev, newCategoryStats]);
-            setNewCategoryModalVisible(false);
-            Alert.alert('Success', 'Category created successfully.',
-              [
-                {
-                  text: 'Close',
-                  onPress: () => console.log('Alert closed'),  
-                  style: 'cancel',
-                },
-                {
-                  text: 'See Category',
-                  onPress: () => {handleCategoryPress(name)},
-                  style: 'default',
-                },
-              ],
-              { cancelable: true }
-            );
-          } catch (error: any) {
-            Alert.alert('Error', error?.message || 'Failed to create category.');
-          }
+    const handleSuccessfullyCreatedCategory = async (categoryName: string) => {
+        const newCategoryStats = await fetchCategoryStatsByName(categoryName);
+        setCategoryStats(prev => [...prev, newCategoryStats]);
+        setNewCategoryModalVisible(false);
     }
 
     return (
@@ -168,7 +111,7 @@ const AllCategories = () => {
                         {sortedCategoryStats.map(({ name, totalSpent, mostPopularStore }) => (
                             <TouchableOpacity
                                 key={name}
-                                onPress={() => handleCategoryPress(name)}
+                                onPress={() => router.push({pathname: '/categoryOverview',params: { name },})}
                                 className="bg-white rounded-2xl p-4 shadow-sm"
                             >
                                 <Text className="text-primary-700 font-bold text-lg mb-1">{name}</Text>
@@ -201,52 +144,55 @@ const AllCategories = () => {
                     </View>
             )}
 
-        <Modal
-            transparent
-            visible={sortMenuVisible}
-            animationType="fade"
-            onRequestClose={() => setSortMenuVisible(false)}
-        >
-            <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }} onPress={() => setSortMenuVisible(false)}>
-                <View className="absolute bg-white rounded-xl py-2 w-[220px] shadow-lg mt-52 ml-3">
-                    {[
-                    { label: 'Name (A → Z)', option: 'name', direction: 'asc' },
-                    { label: 'Name (Z → A)', option: 'name', direction: 'desc' },
-                    { label: 'Total Spent (Low → High)', option: 'total', direction: 'asc' },
-                    { label: 'Total Spent (High → Low)', option: 'total', direction: 'desc' },
-                    ].map(({ label, option, direction }) => {
-                        const isActive = sortOption === option && sortDirection === direction;
-                        return (
-                            <TouchableOpacity
-                            key={label}
-                            onPress={() => onSelectSortOption(option as 'name' | 'total', direction as 'asc' | 'desc')}
-                            style={{
-                                paddingVertical: 10,
-                                paddingHorizontal: 16,
-                                backgroundColor: isActive ? '#e0e7ff' : 'transparent',
-                                borderRadius: 8,
-                            }}
-                            >
-                            <Text
-                                style={{
-                                color: isActive ? '#4f46e5' : '#111827',
-                                fontWeight: isActive ? '600' : '400',
-                                }}
-                            >
-                                {label}
-                            </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
-            </Pressable>
-          </Modal>
-          <NewCategoryModal 
-            visible={newCategoryModalVisible}
-            onClose={() => setNewCategoryModalVisible(false)}
-            onCreate={handleCreateCategory}
-          />
             </ScrollView>
+
+            <Modal
+                transparent
+                visible={sortMenuVisible}
+                animationType="fade"
+                onRequestClose={() => setSortMenuVisible(false)}
+            >
+                <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }} onPress={() => setSortMenuVisible(false)}>
+                    <View className="absolute bg-white rounded-xl py-2 w-[220px] shadow-lg mt-52 ml-3">
+                        {[
+                        { label: 'Name (A → Z)', option: 'name', direction: 'asc' },
+                        { label: 'Name (Z → A)', option: 'name', direction: 'desc' },
+                        { label: 'Total Spent (Low → High)', option: 'total', direction: 'asc' },
+                        { label: 'Total Spent (High → Low)', option: 'total', direction: 'desc' },
+                        ].map(({ label, option, direction }) => {
+                            const isActive = sortOption === option && sortDirection === direction;
+                            return (
+                                <TouchableOpacity
+                                key={label}
+                                onPress={() => onSelectSortOption(option as 'name' | 'total', direction as 'asc' | 'desc')}
+                                style={{
+                                    paddingVertical: 10,
+                                    paddingHorizontal: 16,
+                                    backgroundColor: isActive ? '#e0e7ff' : 'transparent',
+                                    borderRadius: 8,
+                                }}
+                                >
+                                <Text
+                                    style={{
+                                    color: isActive ? '#4f46e5' : '#111827',
+                                    fontWeight: isActive ? '600' : '400',
+                                    }}
+                                >
+                                    {label}
+                                </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </Pressable>
+            </Modal>
+
+            <NewCategoryModal 
+                visible={newCategoryModalVisible}
+                onClose={() => setNewCategoryModalVisible(false)}
+                onSuccess={handleSuccessfullyCreatedCategory}
+            />
+
         </SafeAreaView>
         </SafeAreaProvider>
     );

@@ -1,9 +1,20 @@
+import { useAuth } from '@/AuthContext';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 const TabsLayout = () => {
+  const { token, loading } = useAuth();
+
+  if (loading) {
+    return <View className="flex-1 items-center justify-center"><ActivityIndicator /></View>;
+  }
+
+  if (!token) {
+    return <Redirect href="/onboarding" />;
+  }
+  
   return (
     <Tabs screenOptions={{ 
       tabBarActiveTintColor: '#5F66F5', 

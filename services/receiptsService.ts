@@ -1,61 +1,43 @@
 import { CreateReceipt } from "@/types/receipt";
 import apiClient from "./apiClient";
 
-export const getMyReceipts = async (token: string) => {
+export const getMyReceipts = async () => {
     try {
-        const response = await apiClient.get('/api/receipts/getAll', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
+        const response = await apiClient.get('/api/receipts/getAll');
         return response.data
     } catch (error) {
         throw new Error("Error loading receipts.");
     }
 }
 
-export const getReceiptById = async (token: string, receiptId: string) => {
+export const getReceiptById = async (receiptId: string) => {
     try {
-      const response = await apiClient.get(`/api/receipts/${receiptId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.get(`/api/receipts/${receiptId}`);
       return response.data;
     } catch (error) {
       throw new Error("Error loading receipt.");
     }
 };
 
-export const getCategoryItems= async (token: string, category: string) => {
+export const getCategoryItems= async (category: string) => {
     try {
         const response = await apiClient.get('/api/receipts/getCategoryItems', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
             params: {
                 category: category,
             },
         });
-
         return response.data
     } catch (error) {
         throw new Error("Error loading receipts.");
     }
 }
 
-export const createReceipt = async (token: string, data: CreateReceipt) => {
+export const createReceipt = async (data: CreateReceipt) => {
     try {
         const response = await apiClient.post('/api/receipts/new', 
             {
                 ...data,
             },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
         );
 
         return response.data;
@@ -64,16 +46,11 @@ export const createReceipt = async (token: string, data: CreateReceipt) => {
     }
 }
 
-export const updateReceipt = async (token: string, receiptId: string, data: CreateReceipt) => {
+export const updateReceipt = async (receiptId: string, data: CreateReceipt) => {
     try {
         const response = await apiClient.put(`/api/receipts/update/${receiptId}`, 
             {
                 ...data,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
             }
         );
         return response.data;
@@ -83,21 +60,29 @@ export const updateReceipt = async (token: string, receiptId: string, data: Crea
 }
 
 
-export const createCategory = async (token: string, name:  string) => {
+export const createCategory = async (name:  string) => {
     try {
         const response = await apiClient.post('/api/users/newCategory', 
             {
                 name,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
             }
         );
         return response.data;
     } catch (error: any) {
         const message = error?.response?.data?.message || "Error creating category.";
         throw new Error(message);
+    }
+}
+
+
+//DODAJ U WORD
+export const deleteReceipt = async (selectedId: string) => {
+    try {
+        const response = await apiClient.delete('/api/receipts/deleteReceipt', {
+            params: { selectedId }
+        });
+        return response.data
+    } catch (error) {
+        throw new Error("Error deleting receipt.");
     }
 }

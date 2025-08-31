@@ -1,19 +1,39 @@
 import { getMyProfile } from "@/services/userService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { PrimaryButton } from "../buttons/PrimaryButton";
 
+// interface CategoryModalProps {
+//     itemCategories: { [key: number]: string[] };
+//     setItemCategories: React.Dispatch<React.SetStateAction<{ [key: number]: string[] }>>;
+//     selectedItemIndex: number;
+//     onDone: () => void;
+// }
+
 interface CategoryModalProps {
-    itemCategories: { [key: number]: string[] };
-    setItemCategories: React.Dispatch<React.SetStateAction<{ [key: number]: string[] }>>;
-    selectedItemIndex: number;
-    onDone: () => void;
+  initialCategories: string[];
+  onDone: (categories: string[]) => void;
+  onCancel: () => void;
 }
 
-const AddToCategoryModal: React.FC<CategoryModalProps> = ({  itemCategories, setItemCategories, selectedItemIndex, onDone }) =>  {
+const AddToCategoryModal: React.FC<CategoryModalProps> = ({  initialCategories, onDone, onCancel, }) =>  {
     const [categoryInput, setCategoryInput] = useState<string>('');
     const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories ?? []);
+
+    useEffect(() => { setSelectedCategories(initialCategories ?? []); }, [initialCategories]);
+    
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const profile = await getMyProfile();
+                setAvailableCategories(profile.categories);
+            } catch (error) {
+                Alert.alert("Error", "Failed to load profile data.");
+            }
+        };
+        fetchUserProfile();
+    }, []);
 
     const filteredCategories = useMemo(() => {
         return categoryInput.trim()
@@ -22,54 +42,63 @@ const AddToCategoryModal: React.FC<CategoryModalProps> = ({  itemCategories, set
             )
           : availableCategories;
     }, [categoryInput, availableCategories]);
-    
-    useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-              const token = await AsyncStorage.getItem("token");
-              if (token) {
-                const profile = await getMyProfile(token);
-                setAvailableCategories(profile.categories);
-              }
-            } catch (error) {
-              Alert.alert("Error", "Failed to load profile data.");
-            }
-        };
-        fetchUserProfile();
-    }, []);
+
+    const norm = (s: string) => s.trim().toLowerCase();
 
     const handleAddNewCategory = () => {
-        if (categoryInput.trim() && selectedItemIndex !== null) {
-          const newCat = categoryInput.trim();
-          setAvailableCategories((prev) =>
-            prev.includes(newCat) ? prev : [...prev, newCat]
-          );
-          setItemCategories((prev) => ({
-            ...prev,
-            [selectedItemIndex]: [...(prev[selectedItemIndex] || []), newCat],
-          }));
-          setCategoryInput('');
-        }
+        const raw = categoryInput.trim();
+        if (!raw) return;
+
+        const existsInAvailable = availableCategories.some((c) => norm(c) === norm(raw));
+        const existsInSelected = selectedCategories.some((c) => norm(c) === norm(raw));
+
+        if (!existsInAvailable) {
+            setAvailableCategories((prev) => [...prev, raw]);
+          }
+          if (!existsInSelected) {
+            setSelectedCategories((prev) => [...prev, raw]);
+          }
+          setCategoryInput("");
+
+        // if (categoryInput.trim() && selectedItemIndex !== null) {
+        //   const newCat = categoryInput.trim();
+        //   setAvailableCategories((prev) =>
+        //     prev.includes(newCat) ? prev : [...prev, newCat]
+        //   );
+        //   setItemCategories((prev) => ({
+        //     ...prev,
+        //     [selectedItemIndex]: [...(prev[selectedItemIndex] || []), newCat],
+        //   }));
+        //   setCategoryInput('');
+        // }
     };
 
-    const handleToggleCategory = (category: string, selected: boolean) => {
-        if (selectedItemIndex === null) return;
-      
-        setItemCategories((prev) => {
-          const existing = prev[selectedItemIndex] || [];
-          const updated = selected
-            ? existing.filter((cat) => cat !== category)
-            : [...existing, category];
-          return { ...prev, [selectedItemIndex]: updated };
-        });
+    const handleToggleCategory = (category: string) => {
+        setSelectedCategories((prev) =>
+          prev.some((c) => norm(c) === norm(category))
+            ? prev.filter((c) => norm(c) !== norm(category))
+            : [...prev, category]
+        );
     };
+
+    // const handleToggleCategory = (category: string, selected: boolean) => {
+    //     if (selectedItemIndex === null) return;
+      
+    //     setItemCategories((prev) => {
+    //       const existing = prev[selectedItemIndex] || [];
+    //       const updated = selected
+    //         ? existing.filter((cat) => cat !== category)
+    //         : [...existing, category];
+    //       return { ...prev, [selectedItemIndex]: updated };
+    //     });
+    // };
 
     return (
         <Modal
             animationType="slide"
             transparent={true}
             visible={true}
-            onRequestClose={onDone}
+            onRequestClose={onCancel}
         >
             <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 justify-center items-center z-50">
                 <View className="w-11/12 max-h-[71%] bg-white rounded-2xl p-4">
@@ -99,16 +128,16 @@ const AddToCategoryModal: React.FC<CategoryModalProps> = ({  itemCategories, set
                     )}
                     <ScrollView className="mb-3">
                         {filteredCategories.map((category, index) => {
-                            const selected = itemCategories[selectedItemIndex]?.includes(category);
+                            const selected = selectedCategories.some((c) => norm(c) === norm(category));
                             return (
-                                <Pressable key={index} onPress={() => handleToggleCategory(category, selected)} className={`px-4 py-2 rounded-full mb-2 ${selected ? "bg-primary-100" : "bg-primary-50" }`}>
+                                <Pressable key={index} onPress={() => handleToggleCategory(category)} className={`px-4 py-2 rounded-full mb-2 ${selected ? "bg-primary-100" : "bg-primary-50" }`}>
                                     <Text className="text-gray-700">{category}</Text>
                                 </Pressable>
                             );
                         })}
                     </ScrollView>
 
-                    <PrimaryButton title="Done" onPress={onDone}/>
+                    <PrimaryButton title="Done" onPress={() => onDone(selectedCategories)}/>
                 </View>
             </View>
         </Modal>

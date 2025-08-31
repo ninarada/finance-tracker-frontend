@@ -7,9 +7,12 @@ const PreviewReceipt = () => {
     const router = useRouter();
     const { data } = useLocalSearchParams();
     const parsedData = JSON.parse(data as string);
+    const dateISO = parsedData.date ?? undefined; // keep ISO for navigation/back
+    const dateDisplay = parsedData.date ? new Date(parsedData.date).toLocaleDateString("en-GB") : "";
+    
     const receipt = {
         store: parsedData.store || "",
-        date: new Date(parsedData.date).toLocaleDateString("en-GB") || "",
+        date: dateISO,
         items: parsedData.items || [],
         totalAmount: parsedData.totalAmount,
         paymentMethod: parsedData.paymentMethod || "Other",
@@ -30,7 +33,7 @@ const PreviewReceipt = () => {
                 </View>
                 <View className="px-8 pt-5 pb-10 justify-center border border-slate-400 rounded-3xl m-5 bg-background-light">
                     <Text className="text-xl font-bold mb-3 ">{receipt.store || "Receipt"}</Text>
-                    <Text className="text-sm text-gray-700 mb-4">Date: {receipt.date}</Text>
+                    <Text className="text-sm text-gray-700 mb-4">Date: {dateDisplay}</Text>
                     {receipt.items.length > 0 && (
                         <>
                         <View className="mb-3 pb-2 border-b-2 border-gray-300">
@@ -79,7 +82,19 @@ const PreviewReceipt = () => {
                         )}
                         </>
                     )}
-                    <Pressable onPress={() => router.back()} className="mt-3 bg-primary-250 px-4 py-2 rounded-xl">
+                    <Pressable 
+                        onPress={() =>
+                            router.push({
+                                pathname: "/new-receipt/edit", 
+                                params: {
+                                    data: JSON.stringify(receipt),  
+                                    mode: "update",                
+                                    receiptId: parsedData.receiptId 
+                                },
+                            }
+                        )} 
+                        className="mt-3 bg-primary-250 px-4 py-2 rounded-xl"
+                    >
                         <Text className="text-white text-center font-semibold">Okay</Text>
                     </Pressable>
                 </View>

@@ -1,3 +1,4 @@
+import { Receipt } from "@/types/receipt";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { Animated, Dimensions, Easing, StyleSheet, Text, View } from "react-native";
@@ -26,7 +27,12 @@ function describeArc(cx: number, cy: number, r: number, startAngle: number, endA
   ].join(" ");
 }
 
-const CategorySpendingPieChart = ({ receipts }) => {
+
+interface ValueProps {
+  receipts: Receipt[];
+}
+
+const CategorySpendingPieChart: React.FC<ValueProps> = ({ receipts }) => {
   const size = 180;
   const radius = size / 2;
   const [animatedProgress, setAnimatedProgress] = useState(0);

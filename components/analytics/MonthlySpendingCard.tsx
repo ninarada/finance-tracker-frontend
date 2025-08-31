@@ -1,5 +1,4 @@
 import { Receipt } from '@/types/receipt';
-import { getMonthlySpending } from '@/utils/calculateMonthlySpending';
 import React from 'react';
 import { Text, View } from 'react-native';
 
@@ -9,9 +8,21 @@ type Props = {
 
 const MonthlySpendingCard = ({ receipts }: Props) => {
   const now = new Date();
-  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; // Format: YYYY-MM
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`; 
   const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonth = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
+
+  const getMonthlySpending = (receipts: Receipt[], targetMonth: string): number => {
+    let total = 0;
+    receipts.forEach((receipt) => {
+      const date = new Date(receipt.date);
+      const receiptMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      if (receiptMonth === targetMonth) {
+        total += receipt.totalAmount;
+      }
+    });
+    return total;
+};  
 
   const thisMonthSpendings = getMonthlySpending(receipts, thisMonth);
   const lastMonthSpendings = getMonthlySpending(receipts, lastMonth);

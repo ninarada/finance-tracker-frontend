@@ -15,12 +15,10 @@ const StoreSpendingChart: React.FC<StoreSpendingChartProps> = ({ receipts }) => 
 
     const storeData = useMemo(() => {
         const totals: Record<string, number> = {};
-      
         receipts.forEach(({ store, totalAmount }) => {
           if (!store) return;
           totals[store] = (totals[store] || 0) + totalAmount;
         });
-      
         const sortedStores = Object.entries(totals).sort(([, a], [, b]) => b - a);
         const topStores = sortedStores.slice(0, 4);
         const otherSum = sortedStores.slice(4).reduce((sum, [, total]) => sum + total, 0);
@@ -31,7 +29,6 @@ const StoreSpendingChart: React.FC<StoreSpendingChartProps> = ({ receipts }) => 
           legendFontColor: "#333",
           legendFontSize: 12,
         }));
-      
         if (otherSum > 0) {
           data.push({
             name: "€  Other",
@@ -41,7 +38,6 @@ const StoreSpendingChart: React.FC<StoreSpendingChartProps> = ({ receipts }) => 
             legendFontSize: 12,
           });
         }
-      
         return data;
     }, [receipts]);
 
@@ -50,8 +46,6 @@ const StoreSpendingChart: React.FC<StoreSpendingChartProps> = ({ receipts }) => 
     }
     
     function getRandomColor() {
-        // const index = Math.floor(Math.random() * pieColors.length);
-        // return pieColors[index];
         const color = pieColors[colorIndex];
         colorIndex = (colorIndex + 1) % pieColors.length; 
         return color;

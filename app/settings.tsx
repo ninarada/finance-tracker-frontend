@@ -3,7 +3,7 @@ import { DeleteAccountModal } from "@/components/modals/DeleteAccountModal";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,24 +11,6 @@ const Settings = () => {
   const router = useRouter();
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
-  const [token, setToken] = useState('');
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const tokenData = await AsyncStorage.getItem("token");
-        if (!tokenData) {
-          router.replace("/onboarding");
-          setToken('');
-          return;
-        }
-        setToken(tokenData);
-      } catch (error) {
-        Alert.alert("Error", "Failed to load token.");
-      }
-    }
-    fetchToken();
-  }, []);
 
   const handleLogout = async () => {
     try {
@@ -116,13 +98,11 @@ const Settings = () => {
       <ChangePasswordModal
         visible={showChangePasswordModal}
         onClose={() => setShowChangePasswordModal(false)}
-        token={token}
       />
 
       <DeleteAccountModal 
         visible={showDeleteAccountModal}
         onClose={() => setShowDeleteAccountModal(false)}
-        token={token}
       />
       
     </SafeAreaView>

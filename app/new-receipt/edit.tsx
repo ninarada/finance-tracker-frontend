@@ -2,11 +2,10 @@ import AddToCategoryModal from '@/components/modals/AddToCategoryModal';
 import { createReceipt, updateReceipt } from '@/services/receiptsService';
 import { CreateReceipt, PaymentMethod, ReceiptItem } from '@/types/receipt';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from 'react';
-import { Alert, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const paymentMethods: PaymentMethod[] = ["Cash", "Card", "Mobile", "Other"]; 
@@ -31,14 +30,13 @@ const ItemListHeader = () => (
     </View>
 );
 
-//mode : new, existing, update
 const EditReceipt = () => {
     const router = useRouter();
     const { data, mode, receiptId } = useLocalSearchParams();
     const parsedData = JSON.parse(data as string);
 
     const [store, setStore] = useState(parsedData.store);
-    const [date, setDate] = useState(parsedData.date ? new Date(parsedData.date) : undefined);
+    const [date, setDate] = useState<Date | undefined>(parsedData.date ? new Date(parsedData.date) : undefined);
     const [createdAt, setCreatedAt] = useState(mode==='existing' ? new Date(parsedData.createdAt) : undefined);
     const [updatedAt, setUpdatedAt] = useState(mode==='existing' ? new Date(parsedData.updatedAt) : undefined);
     const [totalAmount, setTotalAmount] = useState(parsedData.totalAmount);
@@ -47,25 +45,53 @@ const EditReceipt = () => {
     const [note, setNote] = useState(parsedData.note);
     const [tags, setTags] = useState(parsedData.tags);
     
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [itemCategories, setItemCategories] = useState<{ [key: number]: string[] }>({});
     const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
     const [addCategoryModalVisible, setAddCategoryModalVisible] = useState(false);
     const [tagInput, setTagInput] = useState("");
     const [addNewItemOpen, setAddNewItemOpen] = useState(false);
     const [newItem, setNewItem] = useState<ReceiptItem>(itemInitial);
     const [unitPriceInput, setUnitPriceInput] = useState<string>("");
+    const [isPickerVisible, setPickerVisible] = useState(false);
 
     const handleSave = async () => {
         if (store===""){
             Alert.alert("Validation", "Store name cannot be empty.");
             return;
         }
-        //napravi provjeru za ostala polja
+        if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+            Alert.alert("Validation", "Please select a valid date.");
+            return;
+        }
+        if (!items || items.length === 0) {
+            Alert.alert("Validation", "Receipt must have at least one item.");
+            return;
+        }
+        for (const [index, item] of items.entries()) {
+            if (!item.name.trim()) {
+                Alert.alert("Validation", `Item ${index + 1} is missing a name.`);
+                return;
+            }
+            if (item.unitPrice <= 0) {
+                Alert.alert("Validation", `Item ${index + 1} has invalid unit price.`);
+                return;
+            }
+            if (item.quantity <= 0) {
+                Alert.alert("Validation", `Item ${index + 1} has invalid quantity.`);
+                return;
+            }
+        }
+        if (totalAmount <= 0) {
+            Alert.alert("Validation", "Total amount must be greater than 0.");
+            return;
+        }
+        if (!isPaymentMethod(paymentMethod)) {
+            Alert.alert("Validation", "Invalid payment method.");
+            return;
+        }
 
         const receiptData: CreateReceipt = {
             store: store.trim(),
-            date: date,
+            date: date ? date.toISOString() : undefined,
             items: items ? items : [],
             totalAmount: totalAmount,
             paymentMethod: paymentMethod,
@@ -74,18 +100,19 @@ const EditReceipt = () => {
         }
 
         try {
-            const token = await AsyncStorage.getItem("token");
-            if (!token) return;
             if(mode==="update") {
-                const updatedData = await updateReceipt(token, JSON.parse(receiptId as string), receiptData);
+                if (!receiptId) {
+                    Alert.alert("Error", "Missing receipt ID for update.");
+                    return;
+                }
+                await updateReceipt(receiptId as string, receiptData);
                 Alert.alert("Success", "Receipt updated successfully.");
                 router.push({
                     pathname: "/history",
                     params: { receiptId },
                 });
             } else {
-                const createData = await createReceipt(token, receiptData);
-                //console.log('edit.tsx - createData: ' + createData);
+                await createReceipt(receiptData);
                 Alert.alert("Success", "Receipt created successfully.");
                 router.push({
                     pathname: "/history",
@@ -107,7 +134,7 @@ const EditReceipt = () => {
               {
                 text: "Yes",
                 onPress: () => {
-                  router.back();
+                  router.replace('/');
                 }
               }
             ]
@@ -117,7 +144,7 @@ const EditReceipt = () => {
     const handlePreview = () => {
         const receiptData: CreateReceipt = {
             store: store.trim(),
-            date: date,
+            date: date ? date.toISOString() : undefined,
             items: items ? items : [],
             totalAmount: totalAmount,
             paymentMethod: paymentMethod,
@@ -132,17 +159,10 @@ const EditReceipt = () => {
         });
     }
 
-    const onChangeDate = (event: any, selectedDate?: Date) => {
-        setShowDatePicker(false); 
-        if (selectedDate) {
-            setDate(selectedDate);
-        }
-    };
-
-    const handleAddToCategory = (i: React.SetStateAction<number | null>) => {
+    const handleAddToCategory = (i: number) => {
         setSelectedItemIndex(i);
         setAddCategoryModalVisible(true);
-    }
+    };
 
     const ItemList = () => (
         <View>
@@ -158,9 +178,9 @@ const EditReceipt = () => {
                             <FontAwesome name="close" size={18} color="#6b7280" />
                         </Pressable>
                     </View>
-                    {itemCategories[i]?.length > 0 ? (
+                    {(item.categories?.length ?? 0) > 0 ? (
                         <View className="flex-row flex-wrap gap-1 px-2">
-                            {itemCategories[i].map((cat, idx) => (
+                            {item.categories!.map((cat: any, idx: any) => (
                                 <View key={idx} className="bg-purple-100 px-2 py-1 rounded-2xl">
                                     <Text className="text-purple-900 font-medium text-xs">{cat}</Text>
                                 </View>
@@ -242,10 +262,20 @@ const EditReceipt = () => {
                     />
 
                     {/* Date */}
-                    <Text className="font-semibold mb-2">Date</Text>
-                    <TouchableOpacity onPress={() => setShowDatePicker(true)} className="border border-gray-300 bg-white rounded-xl px-4 py-2 mb-6">
-                        <Text className="text-gray-700">{date ? date.toLocaleDateString() : ''}</Text>
+                    <TouchableOpacity onPress={() => setPickerVisible(true)} className="border border-gray-300 bg-white rounded-xl px-4 py-2 mb-6">
+                        <Text className="text-gray-700">{date ? date.toLocaleDateString("en-GB") : "Select date"}</Text>
                     </TouchableOpacity>
+                    <DateTimePickerModal
+                        isVisible={isPickerVisible}
+                        mode="date"
+                        date={date ?? new Date()}
+                        maximumDate={new Date()}
+                        onConfirm={(picked: Date) => {
+                            setDate(new Date(picked.setHours(0,0,0,0))); 
+                            setPickerVisible(false)
+                        }}
+                        onCancel={() => setPickerVisible(false)}
+                    />
 
                     {/* Payment Method */}
                     <View className='bg-white rounded-2xl p-4 shadow mb-6 items-center'>
@@ -354,40 +384,20 @@ const EditReceipt = () => {
                 {/* Modal for adding categories */}
                 {addCategoryModalVisible && selectedItemIndex !== null && (
                     <AddToCategoryModal
-                        itemCategories={itemCategories}
-                        setItemCategories={setItemCategories}
-                        selectedItemIndex={selectedItemIndex}
-                        onDone={() => setAddCategoryModalVisible(false)}
-                    />
+                    initialCategories={items[selectedItemIndex]?.categories ?? []}
+                    onDone={(cats) => {
+                      setItems((prev: any[]) =>
+                        prev.map((it, idx) => (idx === selectedItemIndex ? { ...it, categories: cats } : it))
+                      );
+                      setAddCategoryModalVisible(false);
+                      setSelectedItemIndex(null);
+                    }}
+                    onCancel={() => {
+                      setAddCategoryModalVisible(false);
+                      setSelectedItemIndex(null);
+                    }}
+                  />
                 )}
-
-                {/* Modal for datepicker */}
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={showDatePicker}
-                    onRequestClose={()=>setShowDatePicker(false)}
-                >
-                    <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 justify-center items-center z-50">
-                        <View className="w-11/12 max-h-[71%] bg-white rounded-2xl p-4">
-                            <DateTimePicker
-                                value={date ? date : new Date()}
-                                mode="date"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                maximumDate={new Date()} 
-                                onChange={onChangeDate}
-                            />
-                            {Platform.OS === 'ios' && (
-                                <Pressable
-                                    onPress={() => setShowDatePicker(false)}
-                                    className="bg-primary-50 px-4 py-2 mb-3 rounded-2xl"
-                                >
-                                    <Text className="text-primary-300 text-center">Done</Text>
-                                </Pressable>
-                            )}
-                        </View>
-                    </View>
-                </Modal>
                 
                 {/* Modal for adding new item */}
                 <Modal
@@ -449,4 +459,3 @@ const EditReceipt = () => {
 };
 
 export default EditReceipt;
-

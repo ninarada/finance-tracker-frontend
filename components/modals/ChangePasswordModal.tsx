@@ -7,13 +7,11 @@ import { TertiaryButton } from "../buttons/TertiaryButton";
 interface ChangePasswordModalProps {
   visible: boolean;
   onClose: () => void;
-  token: string;
 }
 
 export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   visible,
   onClose,
-  token,
 }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -24,15 +22,13 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       Alert.alert("Error", "Both fields are required");
       return;
     }
-
     if (newPassword.length < 6) {
       Alert.alert("Error", "New password must be at least 6 characters");
       return;
     }
-
     try {
       setLoading(true);
-      await changePassword(token, currentPassword, newPassword);
+      await changePassword(currentPassword, newPassword);
       Alert.alert("Success", "Password changed successfully");
       setCurrentPassword("");
       setNewPassword("");

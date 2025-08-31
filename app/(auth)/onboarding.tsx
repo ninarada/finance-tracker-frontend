@@ -54,7 +54,7 @@ export default function Onboarding() {
         bottomButton={false}
       />
 
-      <View className="px-6 mb-5">
+      <View className="px-6 mb-10">
         <Pressable 
           onPress={() => router.push('/(auth)/sign-up')} 
           className="bg-primary-300 rounded-full py-3 mb-4">
