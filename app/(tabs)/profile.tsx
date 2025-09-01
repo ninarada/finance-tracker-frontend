@@ -66,7 +66,8 @@ const Profile = () => {
           type: selectedImage.type || "image/jpeg",
         },
       });
-      setEditUserPhoto(selectedImage.uri);
+      setEditUserPhoto({ uri: selectedImage.uri });
+      console.log("Picked:", selectedImage.uri);
     }
   };  
 
@@ -78,15 +79,18 @@ const Profile = () => {
   const handleSaveEdit = async () => {
     try {
       if(editUser.name && editUser.surname) {
-        await updateProfile({
+        const updated = await updateProfile({
           name: editUser.name,
           surname: editUser.surname,
           location: editUser.location,
           bio: editUser.bio,
           photo: editUser.photo,
         });
+        const newUrl = updated?.photo || user?.photo;
+        const freshUrl = newUrl ? `${newUrl}?t=${Date.now()}` : undefined;
+        setUser((prev: any) => ({ ...prev, ...updated, photo: newUrl }));
+        setUserPhoto(freshUrl ? { uri: freshUrl } : images.profile_picture);
         setEditingMode(false);
-        setUser(editUser)
       }
     } catch (error) {
       Alert.alert("Error", "Failed to update profile.");
@@ -115,7 +119,7 @@ const Profile = () => {
               className="absolute top-4 right-4 z-10"
             >
               <View className='shadow-sm'>
-                <FontAwesome size={32} name="gear" color="#9ca3af"/>
+                <FontAwesome size={32} name="gear" color="white"/>
               </View>
             </Pressable>
             <View className="items-center z-1 gap-2">

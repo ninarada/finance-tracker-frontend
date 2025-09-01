@@ -21,7 +21,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, onClose }) => {
     router.push({
       pathname: "/new-receipt/edit",
       params: {
-        mode: 'update',
+        mode: 'existing',
         receiptId: receiptId,
         data: JSON.stringify(receipt), 
       },

@@ -239,7 +239,7 @@ const Home = () => {
           <View className="mb-10 gap-4">
             <View className="flex-row gap-2 items-baseline">
               <Text className="text-xl font-medium text-text">Favourite Categories</Text>
-              <FontAwesome name={"star-o"} size={16} color={"grey"} />
+              <FontAwesome name={"star"} size={16} color={"grey"} />
             </View>
             {user.favouriteCategories.length < 1 ? (
               <Text className="text-md text-gray-600 text-center">You haven't selected any favorite categories yet.</Text>

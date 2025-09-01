@@ -164,7 +164,7 @@ const History = () => {
                                 onPress={() => openReceiptModal(receipt)}
                                 className="bg-white rounded-2xl p-4 mb-5 shadow-sm"
                             >
-                                <Text className="text-lg font-semibold mb-1">Store: {receipt.store || "Unknown"}</Text>
+                                <Text className="text-lg font-semibold mb-1">{receipt.store || "Unknown"}</Text>
                                 <Text className="text-sm text-gray-500 mb-1">
                                     Date: {new Date(receipt.date).toLocaleDateString()}
                                 </Text>

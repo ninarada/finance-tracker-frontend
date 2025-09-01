@@ -5,7 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 
 const PreviewReceipt = () => {
     const router = useRouter();
-    const { data } = useLocalSearchParams();
+    const { data, mode } = useLocalSearchParams();
     const parsedData = JSON.parse(data as string);
     const dateISO = parsedData.date ?? undefined; // keep ISO for navigation/back
     const dateDisplay = parsedData.date ? new Date(parsedData.date).toLocaleDateString("en-GB") : "";
@@ -88,7 +88,7 @@ const PreviewReceipt = () => {
                                 pathname: "/new-receipt/edit", 
                                 params: {
                                     data: JSON.stringify(receipt),  
-                                    mode: "update",                
+                                    mode: mode,
                                     receiptId: parsedData.receiptId 
                                 },
                             }

@@ -100,7 +100,7 @@ const EditReceipt = () => {
         }
 
         try {
-            if(mode==="update") {
+            if(mode==="existing") {
                 if (!receiptId) {
                     Alert.alert("Error", "Missing receipt ID for update.");
                     return;
@@ -155,6 +155,7 @@ const EditReceipt = () => {
             pathname: "/new-receipt/preview",
             params: {
               data: JSON.stringify(receiptData), 
+              mode: mode,
             },
         });
     }
@@ -237,7 +238,7 @@ const EditReceipt = () => {
         <SafeAreaProvider>
             <SafeAreaView className='flex-1'>
                 <ScrollView className="px-5">
-                    <Pressable onPress={() => router.back()} className="flex-row items-center gap-2">
+                    <Pressable onPress={handleCancel} className="flex-row items-center gap-2">
                         <FontAwesome size={15} name="arrow-left" color="#64748b"/>
                         <Text className="text-slate-500 font-medium text-xl">back</Text>
                     </Pressable>
@@ -270,6 +271,7 @@ const EditReceipt = () => {
                         mode="date"
                         date={date ?? new Date()}
                         maximumDate={new Date()}
+                        minimumDate={new Date(1950, 0, 1)} 
                         onConfirm={(picked: Date) => {
                             setDate(new Date(picked.setHours(0,0,0,0))); 
                             setPickerVisible(false)

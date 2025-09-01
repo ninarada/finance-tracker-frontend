@@ -73,7 +73,11 @@ export const updateProfile = async (updatedData: UpdatedProfileData) => {
       } as any); 
     }
 
-    const response = await apiClient.put('/api/users/updateProfile', formData, );
+    const response = await apiClient.put('/api/users/updateProfile', formData,{
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    } );
     return response.data;
   } catch (error) {
     throw new Error('Error updating profile.');

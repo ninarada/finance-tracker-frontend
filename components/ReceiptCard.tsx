@@ -9,7 +9,7 @@ type Props = {
 const ReceiptCard: React.FC<Props> = ({ receipt }) => {
   return (
     <View>
-      <Text className="text-lg font-semibold mb-1">Store: {receipt.store || "Unknown"}</Text>
+      <Text className="text-lg font-semibold mb-1">{receipt.store || "Unknown"}</Text>
       <Text className="text-sm text-gray-500 mb-1">
         Date: {new Date(receipt.date).toLocaleDateString()}
       </Text>
