@@ -1,50 +1,65 @@
-# Welcome to your Expo app 👋
+# FinTrack - Finance Tracking Application (Frontend)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobile application for personal expense tracking: receipt scanning (OCR), manual entry, categorization, and analytics.  
+This repository contains the **client-side** built with **React Native**, **Expo**, and **Expo Router**.
 
-## Get started
+---
 
-1. Install dependencies
+## ✨ Features
 
-   ```bash
-   npm install
-   ```
+- Onboarding, registration, and login (JWT-based)
+- Scan receipts via camera or import from gallery (OCR handled by backend)
+- Manual receipt entry and editing
+- Categorization of expenses and “favorite” categories
+- Receipt history with filtering, sorting, and pagination
+- Analytics: monthly summaries, average receipt value, spending by category and store
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 🧰 Tech Stack
 
-In the output, you'll find options to open the app in a
+- **React Native** (Expo)
+- **Expo Router** (navigation)
+- **Axios** (HTTP requests) + **AsyncStorage** (local token storage)
+- **react-native-chart-kit**, **react-native-svg** (charts)
+- **react-native-progress**, RN **Animated** (UI & animations)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📦 Project Structure
 
-## Get a fresh project
+- **app/** → Navigation and main screens (Expo Router)  
+- **components/** → Reusable UI building blocks (charts, buttons, modals, menus, etc.)  
+- **services/** → Centralized API communication (Axios client + domain services)  
+- **utils/** → General helper functions  
+- **assets/** → Static resources (icons, images, illustrations) 
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
-```
+## 🔐 Authentication
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- Backend returns a JWT after successful registration/login.
+- Token is stored in AsyncStorage.
+- Interceptor in apiClient.ts automatically adds Authorization: Bearer <token> to all protected requests.
 
-## Learn more
+## 📊 Analytics
 
-To learn more about developing your project with Expo, look at the following resources:
+- Monthly Spending, Average Receipt Value
+- Spendings of Last 4 Months (bar chart)
+- Spending Overview by Category & Spending by Store (pie charts)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📷 Screenshots
 
-## Join the community
+### Onboarding Flow
+<p float="left">
+  <img src="./screenshots/onboarding1.png" alt="Welcome to FinTrack" width="200"/>
+  <img src="./screenshots/onboarding2.png" alt="Smart Expense Tracking" width="200"/>
+  <img src="./screenshots/onboarding3.png" alt="Scan & Save Time" width="200"/>
+  <img src="./screenshots/onboarding4.png" alt="Insights & Reports" width="200"/>
+</p>
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Sign Up / Log In Screens
+<div align="center">
+  <img src="./screenshots/signup.png" alt="Sign Up Screen" width="300"/>
+   <img src="./screenshots/login.png" alt="Login Screen" width="300"/>
+</div>
