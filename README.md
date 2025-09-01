@@ -51,15 +51,55 @@ This repository contains the **client-side** built with **React Native**, **Expo
 ## 📷 Screenshots
 
 ### Onboarding Flow
-<p float="left">
-  <img src="./screenshots/onboarding1.png" alt="Welcome to FinTrack" width="200"/>
-  <img src="./screenshots/onboarding2.png" alt="Smart Expense Tracking" width="200"/>
-  <img src="./screenshots/onboarding3.png" alt="Scan & Save Time" width="200"/>
-  <img src="./screenshots/onboarding4.png" alt="Insights & Reports" width="200"/>
-</p>
-
-### Sign Up / Log In Screens
 <div align="center">
-  <img src="./screenshots/signup.png" alt="Sign Up Screen" width="300"/>
-   <img src="./screenshots/login.png" alt="Login Screen" width="300"/>
+  <img src="./screenshots/signin/onboarding.png" alt="Welcome to FinTrack" height="500"/>
 </div>
+
+### Sign Up / Log In
+<div align="center">
+  <img src="./screenshots/signin/register.png" alt="Sign Up Screen" width="30%"/>
+   <img src="./screenshots/signin/login.png" alt="Login Screen" width="30%"/>
+</div>
+
+### Home Screen
+<div align="center">
+   <img src="./screenshots/home.png" alt="Login Screen" height="500"/>
+</div>
+
+### Profile 
+<div align="center">
+  <img src="./screenshots/profile/profile.png" alt="Sign Up Screen" height="500"/>
+   <img src="./screenshots/profile/edit_profile.png" alt="Login Screen" height="500"/>
+</div>
+
+### Analytics 
+<div align="center">
+   <img src="./screenshots/analytics.png" alt="Login Screen" height="500"/>
+</div>
+
+### New Receipt 
+<div align="center">
+  <img src="./screenshots/new_receipt/new_receipt_loading.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/new_receipt/new_receipt.png" alt="Login Screen" height="500"/>
+</div>
+<div align="center">
+  <img src="./screenshots/new_receipt/new_receipt_preview.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/new_receipt/new_receipt_cancel.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/new_receipt/new_receipt_success.png" alt="Login Screen" height="500"/>
+</div>
+
+### Categories Screen
+<div align="center">
+  <img src="./screenshots/categories/categories_1.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/categories/categories_2.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/categories/categories_3.png" alt="Login Screen" height="500"/>
+</div>
+<div align="center">
+    <img src="./screenshots/categories/categories_4.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/categories/categories_5.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/categories/categories_6.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/categories/categories_7.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/categories/categories_8.png" alt="Login Screen" height="500"/>
+  <img src="./screenshots/categories/categories_9.png" alt="Login Screen" height="500"/>
+</div>
+
