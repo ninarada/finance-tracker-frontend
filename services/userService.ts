@@ -86,9 +86,7 @@ export const updateProfile = async (updatedData: UpdatedProfileData) => {
 
 export const deleteCategory = async (name:  string) => {
   try {
-      const response = await apiClient.delete('/api/users/deleteCategory', {
-        params: { name }
-      });
+      const response = await apiClient.delete('/api/users/deleteCategory', {params: { name }});
       return response.data;
   } catch (error: any) {
       const message = error?.response?.data?.message || "Error deleting category.";
@@ -98,9 +96,7 @@ export const deleteCategory = async (name:  string) => {
 
 export const addCategoryToFavourites = async (categoryName: string, add: boolean) => {
   try {
-    const response = await apiClient.post('/api/users/addCategoryToFavourites',
-      { categoryName, add },
-    );
+    const response = await apiClient.post('/api/users/addCategoryToFavourites', { categoryName, add },);
     return response.data;
   } catch (error: any) {
     const message = error?.response?.data?.message || "Error adding favourite category.";
@@ -108,13 +104,9 @@ export const addCategoryToFavourites = async (categoryName: string, add: boolean
   }
 };
 
-// DODAJ U WORD
-
 export const deleteUser = async (password: string): Promise<User> => {
   try {
-    const response = await apiClient.delete('/api/users/deleteUser', {
-      params: { password }
-    });
+    const response = await apiClient.delete('/api/users/deleteUser', { params: { password }});
     return response.data;
   } catch (error: any) {
     const message = error?.response?.data?.message || "Error deleting account.";
@@ -122,16 +114,12 @@ export const deleteUser = async (password: string): Promise<User> => {
   }
 };
 
-//PUT /api/users/changePassword
 export const changePassword = async (currentPassword: string, newPassword: string): Promise<User> => {
   try {
-    const response = await apiClient.put('/api/users/changePassword', 
-      { currentPassword, newPassword, },
-    );
+    const response = await apiClient.put('/api/users/changePassword', { currentPassword, newPassword, },);
     return response.data;
   } catch (error: any) {
     const message = error?.response?.data?.message || "Error changing password.";
     throw new Error(message);
   }
 };
-

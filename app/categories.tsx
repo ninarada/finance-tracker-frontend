@@ -1,5 +1,4 @@
 import DottedLine from '@/assets/svg/dottedLine';
-import { useAuth } from '@/AuthContext';
 import NewCategoryModal from '@/components/modals/newCategoryModal';
 import { getMyProfile } from '@/services/userService';
 import { CategoryStats, fetchCategoryStatsByName } from '@/utils/categoryStats';
@@ -12,7 +11,6 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const AllCategories = () => {
     const router = useRouter();
-    const { token } = useAuth();
     const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
     const [loading, setLoading] = useState(true);
     const [sortOption, setSortOption] = useState<"name" | "total">("total");
@@ -25,9 +23,7 @@ const AllCategories = () => {
         try {
             const profile = await getMyProfile();
             const categories = profile.categories || [];
-            const statsPromises = categories.map((category: string) =>
-                fetchCategoryStatsByName(category)
-            );
+            const statsPromises = categories.map((category: string) => fetchCategoryStatsByName(category));
             const statsResults = await Promise.all(statsPromises);
             setCategoryStats(statsResults);
         } catch (error) {
@@ -37,12 +33,7 @@ const AllCategories = () => {
         }
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchCategoriesAndStats();
-        }, [])
-    );
-
+    useFocusEffect(useCallback(() => {fetchCategoriesAndStats();}, []));
 
     const sortedCategoryStats = [...categoryStats].sort((a, b) => {
         if (sortOption === "total") {

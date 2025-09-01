@@ -21,11 +21,7 @@ export const getReceiptById = async (receiptId: string) => {
 
 export const getCategoryItems= async (category: string) => {
     try {
-        const response = await apiClient.get('/api/receipts/getCategoryItems', {
-            params: {
-                category: category,
-            },
-        });
+        const response = await apiClient.get('/api/receipts/getCategoryItems', {params: {category: category,},});
         return response.data
     } catch (error) {
         throw new Error("Error loading receipts.");
@@ -34,12 +30,7 @@ export const getCategoryItems= async (category: string) => {
 
 export const createReceipt = async (data: CreateReceipt) => {
     try {
-        const response = await apiClient.post('/api/receipts/new', 
-            {
-                ...data,
-            },
-        );
-
+        const response = await apiClient.post('/api/receipts/new', { ...data,},);
         return response.data;
     } catch (error) {
         throw new Error("Error creating receipt.");
@@ -48,25 +39,16 @@ export const createReceipt = async (data: CreateReceipt) => {
 
 export const updateReceipt = async (receiptId: string, data: CreateReceipt) => {
     try {
-        const response = await apiClient.put(`/api/receipts/update/${receiptId}`, 
-            {
-                ...data,
-            }
-        );
+        const response = await apiClient.put(`/api/receipts/update/${receiptId}`, {...data,});
         return response.data;
     } catch (error) {
         throw new Error("Error updating receipt.");
     }
 }
 
-
 export const createCategory = async (name:  string) => {
     try {
-        const response = await apiClient.post('/api/users/newCategory', 
-            {
-                name,
-            }
-        );
+        const response = await apiClient.post('/api/users/newCategory', {name,});
         return response.data;
     } catch (error: any) {
         const message = error?.response?.data?.message || "Error creating category.";
@@ -74,13 +56,9 @@ export const createCategory = async (name:  string) => {
     }
 }
 
-
-//DODAJ U WORD
 export const deleteReceipt = async (selectedId: string) => {
     try {
-        const response = await apiClient.delete('/api/receipts/deleteReceipt', {
-            params: { selectedId }
-        });
+        const response = await apiClient.delete('/api/receipts/deleteReceipt', {params: { selectedId }});
         return response.data
     } catch (error) {
         throw new Error("Error deleting receipt.");

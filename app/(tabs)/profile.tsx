@@ -1,4 +1,3 @@
-import { useAuth } from "@/AuthContext";
 import { images } from "@/constants/images";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,7 +10,6 @@ import { getMyProfile, getUserStats, updateProfile } from "../../services/userSe
 
 const Profile = () => {
   const router = useRouter();
-  const { token } = useAuth();
   const [user, setUser] = useState<any>(null);
   const [userPhoto, setUserPhoto] = useState<any>(images.profile_picture);
   const [stats, setStats] = useState<any>(null);
@@ -36,9 +34,8 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
-    if (!token) return;
     fetchUserProfile();
-  }, [token, fetchUserProfile]);
+  }, [fetchUserProfile]);
 
   const handleLogout = async () => {
     try {

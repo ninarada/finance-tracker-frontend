@@ -1,5 +1,4 @@
 import DottedLine from '@/assets/svg/dottedLine';
-import { useAuth } from '@/AuthContext';
 import ReceiptModal from '@/components/modals/ReceiptModal';
 import { getCategoryItems, getReceiptById } from '@/services/receiptsService';
 import { addCategoryToFavourites, deleteCategory, getMyProfile } from '@/services/userService';
@@ -14,7 +13,6 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 const CategoryOverview = () => {
   const { name } = useLocalSearchParams<{ name: string }>();
   const router = useRouter();
-  const { token } = useAuth();
   const [categoryItems, setCategoryItems] = useState<any[]>([]);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);

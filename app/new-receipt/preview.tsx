@@ -7,7 +7,7 @@ const PreviewReceipt = () => {
     const router = useRouter();
     const { data, mode } = useLocalSearchParams();
     const parsedData = JSON.parse(data as string);
-    const dateISO = parsedData.date ?? undefined; // keep ISO for navigation/back
+    const dateISO = parsedData.date ?? undefined; 
     const dateDisplay = parsedData.date ? new Date(parsedData.date).toLocaleDateString("en-GB") : "";
     
     const receipt = {
